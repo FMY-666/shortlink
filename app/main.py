@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-from . import config, db, ids
+from . import cache, config, db, ids
 
 app = FastAPI(
     title="ShortLink",
@@ -47,14 +47,53 @@ def create_link(req: CreateLinkReq):
 
 @app.get("/{code}")
 def redirect_to_original(code: str):
-    with db.get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, url FROM links WHERE code = %s", (code,))
-            row = cur.fetchone()
+    """访问短链，跳转到原始链接。
 
-            if row is None:
-                raise HTTPException(status_code=404, detail="短码不存在")
+    v2 改造：先查 Redis，命中就直接跳，不再碰数据库。
+    一个短链被访问 10000 次，现在只有第 1 次会落到 MySQL 上。
 
-            cur.execute("UPDATE links SET clicks = clicks + 1 WHERE id = %s", (row["id"],))
+    注意用的是 302 而不是 301：
+      301 = 永久重定向，浏览器会把结果缓存下来，用户第二次点就不经过我们的服务器了，
+            点击统计会全部丢失。
+      302 = 临时重定向，每次都回来问一次，所以能统计、也能随时改目标地址。
+    这是短链服务的经典取舍，面试很爱问。
+    """
+    r = cache.get_client()
+    key = cache.cache_key(code)
 
-    return RedirectResponse(url=row["url"], status_code=302)
+    # 第一步永远是问缓存。
+    # 注意 None 的含义是「缓存里没有」，不是「短码不存在」—— 这两件事要分清楚。
+    url = r.get(key)
+
+    if url is None:
+        # ---------- 缓存未命中：回源查数据库 ----------
+        with db.get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, url FROM links WHERE code = %s", (code,))
+                row = cur.fetchone()
+
+                if row is None:
+                    # 数据库里也没有 → 这个短码确实不存在。
+                    # 把「空」也写进缓存：否则别人反复刷同一个不存在的短码，
+                    # 每次都会穿透缓存打到数据库上（这就是「缓存穿透」）。
+                    # 只存 60 秒，是为了万一它其实是个还没生成的短码，不至于错太久。
+                    r.set(key, "", ex=cache.MISS_TTL)
+                    raise HTTPException(status_code=404, detail="短码不存在")
+
+                url = row["url"]
+
+                # 点击计数。注意只有回源才会走到这里 ——
+                # 换句话说：命中缓存的那 9999 次，clicks 一次都没加。
+                # 这不是 bug，是 v2 的已知取舍，v5 用异步 + 批量写入来补。
+                cur.execute("UPDATE links SET clicks = clicks + 1 WHERE id = %s", (row["id"],))
+
+        # 回源拿到结果后写进缓存，下次就不用再查库了
+        r.set(key, url, ex=cache.URL_TTL)
+
+    elif url == "":
+        # 命中的是上面写进去的「空值缓存」：这个短码确认不存在，直接 404。
+        # 拿空字符串当哨兵是安全的 —— url 有校验，必须以 http:// 或 https:// 开头，
+        # 所以真实数据的值永远不可能是个空串。
+        raise HTTPException(status_code=404, detail="短码不存在")
+
+    return RedirectResponse(url=url, status_code=302)

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="docx-page-size" content="A4">
+<title>踩坑记录 · v1 + v2</title>
+<style>
+:root {
+  --typography-fontFamily-heading: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --typography-fontFamily-body: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --typography-fontFamily-code: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --typography-fontSize-title: 24pt;
+  --typography-fontSize-h1: 18pt;
+  --typography-fontSize-h2: 15pt;
+  --typography-fontSize-h3: 13pt;
+  --typography-fontSize-h4: 11.5pt;
+  --typography-fontSize-body: 11pt;
+  --typography-fontSize-small: 9pt;
+  --typography-lineHeight-body: 1.7;
+  --typography-lineHeight-heading: 1.3;
+  --typography-lineHeight-code: 1.5;
+  --typography-fontWeight-heading: 600;
+  --typography-fontWeight-label: 700;
+  --typography-fontWeight-body: 400;
+  --color-primary: #2563EB;
+  --color-text: #111827;
+  --color-textSecondary: #6B7280;
+  --color-heading: #111827;
+  --color-border: #E5E7EB;
+  --color-divider: #F3F4F6;
+  --color-background: #FFFFFF;
+  --color-codeBackground: #F9FAFB;
+  --color-highlight: #FEF3C7;
+  --color-warnBackground: #FEF6E7;
+  --color-warnBorder: #D97706;
+  --spacing-paragraph: 0.5em;
+  --spacing-paragraphAfter: 0.5em;
+  --spacing-sectionGap: 2em;
+  --spacing-block: 1em;
+  --spacing-listItemGap: 0.4em;
+  --layout-marginTop: 2.5cm;
+  --layout-marginBottom: 2cm;
+  --layout-marginLeft: 2.5cm;
+  --layout-marginRight: 2.5cm;
+  --layout-contentWidth: 15.6cm;
+  --spacing-codePadding: 0.7em 0.9em;
+  --spacing-tocTitleGap: 0.5em;
+  --spacing-tocIndent: 1em;
+  --spacing-tocItemGap: 0.25em;
+  --spacing-eyebrowTop: 4em;
+  --spacing-titleGap: 0.4em;
+  --spacing-subtitleGap: 3em;
+  --spacing-coverBlock: 2em;
+  --spacing-coverCell: 0.3em 0.6em;
+  --spacing-labelGap: 0.2em;
+  --spacing-captionGap: 0.3em;
+  --spacing-notePadding: 0.4em 0 0.4em 0.6em;
+  --spacing-warnPadding: 0.5em 0.7em;
+  --spacing-tableCell: 0.4em 0.6em;
+  --spacing-listIndent: 2em;
+  --screen-paddingWide: 2.4rem 1.6rem 4rem 1.6rem;
+  --screen-paddingNarrow: 1.2rem 0.9rem 3rem 0.9rem;
+  --screen-eyebrowTop: 1.2rem;
+  --screen-subtitleGap: 2.2rem;
+  --screen-titleNarrow: 20pt;
+  --screen-h2Narrow: 14pt;
+
+  --fs-h1: var(--typography-fontSize-h1);
+  --fs-h2: var(--typography-fontSize-h2);
+  --fs-h3: var(--typography-fontSize-h3);
+  --fs-h4: var(--typography-fontSize-h4);
+  --fs-body: var(--typography-fontSize-body);
+  --fs-small: var(--typography-fontSize-small);
+  --fs-title: var(--typography-fontSize-title);
+  --ff-heading: var(--typography-fontFamily-heading);
+  --ff-body: var(--typography-fontFamily-body);
+  --ff-mono: var(--typography-fontFamily-code);
+  --lh-body: var(--typography-lineHeight-body);
+  --lh-heading: var(--typography-lineHeight-heading);
+  --lh-code: var(--typography-lineHeight-code);
+  --fw-bold: var(--typography-fontWeight-label);
+  --fw-heading: var(--typography-fontWeight-heading);
+  --fw-normal: var(--typography-fontWeight-body);
+  --color-muted: var(--color-textSecondary);
+  --color-bg: var(--color-background);
+  --page-content-width: var(--layout-contentWidth);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--ff-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  max-width: var(--page-content-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding: var(--layout-marginTop) 0 var(--layout-marginBottom) 0;
+}
+
+p { text-align: left; font-family: var(--ff-body); font-size: var(--fs-body); color: var(--color-text); margin-bottom: var(--spacing-paragraph); }
+
+h1, h2, h3, h4, h5, h6 { font-family: var(--ff-heading); line-height: var(--lh-heading); color: var(--color-heading); margin-bottom: var(--spacing-paragraph); }
+h1 { font-size: var(--fs-h1); font-weight: var(--fw-bold); margin-top: var(--spacing-sectionGap); }
+h2 { font-size: var(--fs-h2); font-weight: var(--fw-bold); margin-top: var(--spacing-sectionGap); margin-bottom: var(--spacing-block); }
+h3 { font-size: var(--fs-h3); font-weight: var(--fw-bold); margin-top: var(--spacing-block); }
+h4 { font-size: var(--fs-h4); font-weight: var(--fw-bold); color: var(--color-primary); margin-top: var(--spacing-block); margin-bottom: var(--spacing-labelGap); }
+
+ul, ol { padding-left: var(--spacing-listIndent); margin-bottom: var(--spacing-block); }
+li { text-align: left; font-family: var(--ff-body); font-size: var(--fs-body); color: var(--color-text); margin-bottom: var(--spacing-listItemGap); }
+
+pre {
+  font-family: var(--ff-mono);
+  font-size: var(--fs-small);
+  line-height: var(--lh-code);
+  color: var(--color-text);
+  background: var(--color-codeBackground);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-codePadding);
+  margin-bottom: var(--spacing-block);
+  white-space: pre-wrap;
+  text-align: left;
+}
+code { font-family: var(--ff-mono); font-size: var(--fs-small); color: var(--color-text); }
+
+table { border-collapse: collapse; width: 100%; margin-bottom: var(--spacing-block); }
+th, td { border: 1px solid var(--color-border); padding: var(--spacing-tableCell); text-align: left; font-family: var(--ff-body); font-size: var(--fs-small); color: var(--color-text); }
+th { font-weight: var(--fw-bold); background: var(--color-highlight); }
+caption { font-size: var(--fs-small); color: var(--color-muted); text-align: left; margin-bottom: var(--spacing-captionGap); }
+
+strong { font-weight: var(--fw-bold); color: var(--color-text); }
+.note { font-size: var(--fs-small); color: var(--color-muted); border-left: 3px solid var(--color-border); padding: var(--spacing-notePadding); margin-bottom: var(--spacing-block); }
+.note-warn { font-size: var(--fs-body); color: var(--color-text); background: var(--color-warnBackground); border-left: 3px solid var(--color-warnBorder); padding: var(--spacing-warnPadding); margin-bottom: var(--spacing-block); }
+
+.doc-toc { margin-bottom: var(--spacing-sectionGap); padding: var(--spacing-block); background: var(--color-divider); }
+.toc-title { font-weight: var(--fw-bold); margin-bottom: var(--spacing-tocTitleGap); color: var(--color-heading); }
+.toc-list, .toc-list ol, .toc-list ul { list-style: none; list-style-type: none; padding-left: var(--spacing-tocIndent); margin-bottom: 0; }
+.toc-list li { margin-bottom: var(--spacing-tocItemGap); }
+.toc-list a { color: var(--color-primary); text-decoration: none; }
+
+section[role="cover"] > .cover-eyebrow { text-align: center; font-size: var(--fs-small); color: var(--color-muted); margin-top: var(--spacing-eyebrowTop); margin-bottom: var(--spacing-block); }
+.cover-title { text-align: center; font-size: var(--fs-title); font-weight: var(--fw-bold); color: var(--color-heading); margin-top: 0; margin-bottom: var(--spacing-titleGap); }
+.cover-subtitle { text-align: center; font-size: var(--fs-h3); color: var(--color-muted); margin-bottom: var(--spacing-subtitleGap); }
+.cover-info { text-align: center; border: none; margin-top: var(--spacing-coverBlock); }
+.cover-info td { border: none; text-align: center; font-size: var(--fs-small); padding: var(--spacing-coverCell); }
+.cover-info .ci-k { color: var(--color-muted); width: 30%; }
+.cover-info .ci-v { color: var(--color-text); }
+
+@page { @bottom-center { content: counter(page); } }
+@page cover { @bottom-center { content: none; } }
+section[role="cover"] { page: cover; }
+@media screen {
+  body { padding: var(--screen-paddingWide); }
+  section[role="cover"] > .cover-eyebrow { margin-top: var(--screen-eyebrowTop); }
+  .cover-subtitle { margin-bottom: var(--screen-subtitleGap); }
+  .toc-list a:hover { text-decoration: underline; }
+  pre { overflow-x: auto; }
+}
+@media screen and (max-width: 760px) {
+  body { padding: var(--screen-paddingNarrow); }
+  .cover-title { font-size: var(--screen-titleNarrow); }
+  h2 { font-size: var(--screen-h2Narrow); }
+}
+</style>
+</head>
+<body>
+
+<section role="cover">
+  <p class="cover-eyebrow">SHORTLINK · v1 + v2 开发实录</p>
+  <h1 class="cover-title">踩坑记录</h1>
+  <p class="cover-subtitle">从零到上线的 22 个真实报错</p>
+  <table class="cover-info">
+    <tbody>
+    <tr><td class="ci-k">项目</td><td class="ci-v">ShortLink 短链服务</td></tr>
+    <tr><td class="ci-k">技术栈</td><td class="ci-v">Python 3.14 · FastAPI · MySQL 8.0 · Redis 8.10 · Git</td></tr>
+    <tr><td class="ci-k">覆盖范围</td><td class="ci-v">v1 建库上线 → v2 Redis 缓存</td></tr>
+    <tr><td class="ci-k">时间跨度</td><td class="ci-v">2026-09-26 建库 → 2026-09-27 v1 上线、v2 缓存上线</td></tr>
+    <tr><td class="ci-k">整理日期</td><td class="ci-v">2026 年 9 月 27 日</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section role="body" data-page-restart="1">
+
+<nav class="doc-toc" aria-label="文档目录">
+  <p class="toc-title">目录</p>
+  <ol class="toc-list">
+    <li><a href="#section-1">问题总览</a></li>
+    <li><a href="#section-2">一、数据库</a></li>
+    <li><a href="#section-3">二、Python 代码</a></li>
+    <li><a href="#section-4">三、终端与命令行</a></li>
+    <li><a href="#section-5">四、Git 与网络</a></li>
+    <li><a href="#section-6">五、v2 新增：Redis 与缓存（19—22）</a></li>
+    <li><a href="#section-7">六、这些坑怎么用在面试里</a></li>
+    <li><a href="#section-8">附：当前状态（v1 → v2）</a></li>
+  </ol>
+</nav>
+
+<div class="doc-body">
+
+<p>从零到 GitHub 上线的全过程里，实际撞到的每一个报错。报错原文直接来自当时的终端输出，不是后来补编的。每条都写清四件事：<strong>现象</strong>、<strong>根因</strong>、<strong>怎么修</strong>、<strong>下次怎么避免</strong>。</p>
+
+<h2 id="section-1">问题总览</h2>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>问题</th><th>类别</th><th>严重度</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td><code>code</code> 列大小写不敏感，62 进制悄悄变成 36 进制</td><td>数据库</td><td>★★★ 招牌</td></tr>
+    <tr><td>2</td><td><code>ERROR 1046 (3D000): No database selected</code></td><td>数据库</td><td>★</td></tr>
+    <tr><td>3</td><td>自增 id 有空洞、短码跳号</td><td>数据库</td><td>认知类</td></tr>
+    <tr><td>4</td><td><code>OperationalError 1045 / 2003</code> 连不上库</td><td>数据库</td><td>★★</td></tr>
+    <tr><td>5</td><td><code>SyntaxError: invalid syntax</code>，报错行正好是最后一行</td><td>代码</td><td>★★</td></tr>
+    <tr><td>6</td><td><code>SyntaxError</code> 出现在不该出现的行</td><td>代码</td><td>认知类</td></tr>
+    <tr><td>7</td><td><code>.env</code> 密码没改，仍是模板值</td><td>配置</td><td>★★</td></tr>
+    <tr><td>8</td><td><code>cd D:\...</code> 跨盘符静默失败</td><td>命令行</td><td>★★★ 踩了三次</td></tr>
+    <tr><td>9</td><td><code>curl</code> 的 <code>^</code> 续行吞掉 <code>-d</code> 参数</td><td>命令行</td><td>★★</td></tr>
+    <tr><td>10</td><td>SQL 敲进了 cmd 而不是 <code>mysql&gt;</code></td><td>命令行</td><td>★</td></tr>
+    <tr><td>11</td><td>浏览器直接访问 <code>POST</code> 接口得到 405</td><td>命令行</td><td>★</td></tr>
+    <tr><td>12</td><td><code>short_url</code> 里的端口和服务端口不一致</td><td>配置</td><td>★★</td></tr>
+    <tr><td>13</td><td>本机根本没装 Git</td><td>Git</td><td>★</td></tr>
+    <tr><td>14</td><td><code>nothing added to commit but untracked files present</code></td><td>Git</td><td>★★</td></tr>
+    <tr><td>15</td><td><code>fatal: not a git repository</code></td><td>Git</td><td>★★</td></tr>
+    <tr><td>16</td><td><code>Recv failure: Connection was reset</code> / <code>Could not connect to server</code></td><td>网络</td><td>★★★</td></tr>
+    <tr><td>17</td><td><code>git log</code> 中文乱码（虚惊一场）</td><td>工具</td><td>★★</td></tr>
+    <tr><td>18</td><td><code>warning: LF will be replaced by CRLF</code></td><td>Git</td><td>虚警</td></tr>
+    <tr><td>19</td><td>Windows 版 <code>redis-cli</code> 把 <code>*</code> 当本地文件名展开</td><td>命令行</td><td>★★</td></tr>
+    <tr><td>20</td><td>cmd 不支持多行粘贴</td><td>命令行</td><td>★★</td></tr>
+    <tr><td>21</td><td>Redis 窗口被关 = 服务停掉（不是关日志界面）</td><td>运行</td><td>★★</td></tr>
+    <tr><td>22</td><td><code>TypeError: _run() takes 12 ... but 13 were given</code></td><td>代码</td><td>★</td></tr>
+  </tbody>
+</table>
+
+<h2 id="section-2">一、数据库</h2>
+
+<h3>1. code 列大小写不敏感，62 进制悄悄变成 36 进制</h3>
+
+<h4>现象</h4>
+<p>前 35 条创建都正常，第 36 条开始全部 500：</p>
+<pre><code>pymysql.err.IntegrityError: (1062, "Duplicate entry '00000A' for key 'links.uk_code'")</code></pre>
+<p>抛出点在 <code>app/main.py</code> 回填短码的那句：</p>
+<pre><code>cur.execute("UPDATE links SET code = %s WHERE id = %s", (code, new_id))</code></pre>
+<p>查库发现：表里 39 行，<code>id</code> 是 <strong>1—35 和 62—65</strong>，<strong>36—61 这 26 个 id 整段失踪</strong>。</p>
+
+<h4>根因</h4>
+<p><code>schema.sql</code> 里 <code>code</code> 列只写了 <code>VARCHAR(16) DEFAULT NULL</code>，<strong>没指定 collation</strong>。MySQL 8 给 <code>utf8mb4</code> 的默认排序规则是 <strong><code>utf8mb4_0900_ai_ci</code></strong>，末尾 <code>ci</code> 表示 case insensitive，即大小写不敏感。</p>
+<p>而 62 进制字母表是 <code>0-9a-zA-Z</code>：</p>
+<ul>
+  <li><code>id=10</code> 生成 <code>00000a</code>（小写 a）</li>
+  <li><code>id=36</code> 生成 <code>00000A</code>（大写 A）</li>
+</ul>
+<p>在大小写不敏感的规则下，<code>'00000a' = '00000A'</code> 成立，<code>uk_code</code> 唯一索引判重，于是抛 <code>IntegrityError</code>。</p>
+<p><strong>字母表里 10—35 是小写、36—61 是大写，两两配对，正好撞 26 次。</strong></p>
+<pre><code>-- 修复前的证据：明明查的是大写 A，命中的却是小写 a
+SELECT id, code FROM links WHERE code = '00000A';
+-- 返回 (10, '00000a')</code></pre>
+
+<h4>怎么修</h4>
+<pre><code>USE shortlink;
+ALTER TABLE links MODIFY code VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL;</code></pre>
+<p><code>bin</code> 即 binary，按字节比较，大小写敏感。</p>
+<p>同步改 <code>schema.sql</code>，让新建的库不会再犯：</p>
+<pre><code>code VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL</code></pre>
+
+<h4>验证</h4>
+<pre><code>USE shortlink;
+SHOW FULL COLUMNS FROM links;   -- Collation 列必须是 utf8mb4_bin
+SELECT id FROM links WHERE code = '00000A';   -- 修复前返回 1 行，修复后返回 0 行</code></pre>
+<p>实测对比（临时库，60 并发创建）：</p>
+<table>
+  <thead><tr><th><code>code</code> 列 collation</th><th>成功</th><th>失败</th><th>白吃掉的 id</th></tr></thead>
+  <tbody>
+    <tr><td>不指定（<code>utf8mb4_0900_ai_ci</code>）</td><td>35</td><td>25</td><td>25</td></tr>
+    <tr><td>显式 <code>utf8mb4_bin</code></td><td><strong>60</strong></td><td><strong>0</strong></td><td><strong>0</strong></td></tr>
+  </tbody>
+</table>
+
+<h4>下次怎么避免</h4>
+<ul>
+  <li>所有<strong>参与唯一性判断</strong>的字符串列（短码、token、订单号、邀请码），一律显式写 <code>COLLATE utf8mb4_bin</code>。默认值是给人搜的，不是给机器比对的。</li>
+  <li><strong>单元测试抓不到这个 bug</strong>：它只在第 36 条之后才出现，前 35 条全绿。要么写跨边界的测试（一次跑 100 条），要么用并发压测扫边界。</li>
+  <li>顺带一个认知：库的默认 collation 是 <code>utf8mb4_general_ci</code>，但 MySQL 8 的表和列实际继承了新默认 <code>utf8mb4_0900_ai_ci</code>。<strong>别靠记忆猜，<code>SHOW FULL COLUMNS</code> 看一眼最省事。</strong></li>
+</ul>
+<p class="note-warn">一个常见误区：改完 collation <strong>不需要重启 uvicorn</strong>。collation 是 MySQL 的表属性，跟 Python 进程无关，改完下一句 <code>SELECT</code> 就按新规则比较。</p>
+
+<h3>2. ERROR 1046 (3D000): No database selected</h3>
+
+<h4>现象</h4>
+<pre><code>ALTER TABLE links MODIFY code VARCHAR(16) ... ;
+-- ERROR 1046 (3D000): No database selected</code></pre>
+
+<h4>根因</h4>
+<p><code>ALTER TABLE links</code> 里的 <code>links</code> 是<strong>没有带库名的裸表名</strong>。刚登录 <code>mysql&gt;</code> 时并没有选中任何一个库，MySQL 不知道该去哪个库里找 <code>links</code>。</p>
+
+<h4>怎么修</h4>
+<pre><code>USE shortlink;
+ALTER TABLE links MODIFY code VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL;</code></pre>
+<p>或者一条命令带全库名：</p>
+<pre><code>ALTER TABLE shortlink.links MODIFY code VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL;</code></pre>
+
+<h4>下次怎么避免</h4>
+<p>只要不是紧跟在 <code>USE 库名;</code> 后面，SQL 里的表名就写成 <code>库名.表名</code>。多打几个字符，省一次报错。</p>
+
+<h3>3. 自增 id 有空洞、短码跳号 —— 这不是 bug</h3>
+
+<h4>现象</h4>
+<p><code>id</code> 是 1—35、62—65，中间 36—61 整段缺失；短码从 <code>000013</code> 跳到 <code>000014</code>，不连续。</p>
+
+<h4>根因</h4>
+<p><strong>MySQL 的自增值一旦分配出去就不退还</strong>，无论这次插入最后成不成功：</p>
+<ul>
+  <li>插入撞唯一索引失败，吃掉一个 id</li>
+  <li>事务里 <code>INSERT</code> 之后 <code>ROLLBACK</code>，照样吃掉一个 id</li>
+</ul>
+<p>实测（临时库）：<code>INSERT</code> 后立刻 <code>ROLLBACK</code>，表里 0 行，但 <code>AUTO_INCREMENT</code> 已经 +1。</p>
+
+<h4>怎么修</h4>
+<p>不用修，这是<strong>正常行为</strong>，也是分布式发号器要解决的问题之一。只有 <code>TRUNCATE TABLE</code> 会把自增一起归零，<code>DELETE FROM</code> 不会。</p>
+<pre><code>USE shortlink;
+TRUNCATE TABLE links;
+SELECT COUNT(*) FROM links;   -- 0
+-- 下一条短码回到 000001</code></pre>
+
+<h4>下次怎么避免</h4>
+<ul>
+  <li>别把"自增 id"当"第几条记录"用。</li>
+  <li><strong>短码不等于序号</strong>：<code>000013</code> 对应的是 <code>id=65</code>，不是"第 13 条"。62 进制只是 id 的另一种写法。</li>
+  <li>一切涉及"总数"的统计都用 <code>COUNT(*)</code>，不要去猜 <code>MAX(id)</code>。</li>
+</ul>
+
+<h3>4. OperationalError 连不上数据库</h3>
+
+<h4>现象 A</h4>
+<pre><code>pymysql.err.OperationalError: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")</code></pre>
+<p>注意末尾 <code>using password: NO</code>，说明<strong>压根没带密码过去</strong>。</p>
+<p>根因：<code>load_dotenv()</code> 默认从<strong>当前工作目录</strong>往上找 <code>.env</code>。在 <code>D:\dev</code> 下跑脚本时，<code>.env</code> 在 <code>shortlink\</code> 子目录里，找不到，于是 <code>DB_PASSWORD</code> 是空串。</p>
+<p>修法：跑任何连库脚本前，先切到项目根：</p>
+<pre><code>cd /d D:\dev\shortlink</code></pre>
+
+<h4>现象 B</h4>
+<pre><code>pymysql.err.OperationalError: (1045, "Access denied for user 'root'@'localhost' (using password: YES)")</code></pre>
+<p><code>using password: YES</code> 表示密码带过去了，但<strong>不对</strong>。检查 <code>.env</code> 里的 <code>DB_PASSWORD</code>。</p>
+
+<h4>现象 C</h4>
+<pre><code>pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '127.0.0.1'")</code></pre>
+<p>端口或地址不对，或 MySQL 服务没启动。这个错<strong>耗时约 2 秒</strong>才抛出（连接超时重试），可以据此区分它和前两种，前两种是立刻返回的。</p>
+
+<h4>下次怎么避免</h4>
+<p><code>pymysql.connect()</code> <strong>不是懒加载，调用即连接</strong>（TCP 三次握手加认证）。所以"连接测试"可以有意识地在启动早期做一次，让错误尽早暴露，而不是等第一个用户请求进来才炸。</p>
+
+<h2 id="section-3">二、Python 代码</h2>
+
+<h3>5. SyntaxError，而报错行正好是文件的最后一行</h3>
+
+<h4>现象</h4>
+<pre><code>File "D:\dev\shortlink\app\main.py", line 23
+    @app.get("/health")
+    ^
+SyntaxError: invalid syntax</code></pre>
+<p>第 23 行是文件末尾，内容是一个<strong>光秃秃的装饰器</strong>，下面没有 <code>def health():</code>。</p>
+
+<h4>根因</h4>
+<p><strong>文件没敲完。</strong>装饰器 <code>@app.get("/health")</code> 必须紧跟着一个函数定义，单独一行就是语法错误。</p>
+
+<h4>怎么修</h4>
+<pre><code>@app.get("/health")
+def health():
+    return {"status": "ok"}</code></pre>
+
+<h4>下次怎么避免</h4>
+<p>记住这条判据，边敲边跑时几乎每次都用得上：</p>
+<table>
+  <thead><tr><th>报错行在哪</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><strong>等于文件最后一行</strong></td><td>还没敲完（装饰器没有函数体、括号没闭合、冒号后面没内容）</td></tr>
+    <tr><td>在文件中间</td><td>才是真写错了</td></tr>
+  </tbody>
+</table>
+<p>顺带一个沟通教训：当时进度提示写的是"先敲骨架，到 /health 结束"，被理解成"敲到 /health 那一行为止"。进度描述应该写成"<strong>第 N 行到第 M 行，最后一行长什么样</strong>"，不要用"到 X 结束"这种有歧义的说法。</p>
+
+<h3>6. 报错出现在不该出现的行</h3>
+
+<h4>现象</h4>
+<p>改完文件、保存，重新导入还是报同样的 <code>SyntaxError</code>，但行号指向的地方看着完全正常。</p>
+
+<h4>根因</h4>
+<p>Python 的 <code>SyntaxError</code> 报的是<strong>解析器卡住的位置</strong>，不一定是错误真正的位置。典型的：括号少了一个闭不上，解析器会一路读到文件末尾才报错。</p>
+
+<h4>下次怎么避免</h4>
+<ul>
+  <li>报错行在最后一行，先怀疑"没敲完"（见上一条）。</li>
+  <li>报错行在中间且看着没问题，往上翻，检查<strong>上一行</strong>的括号、引号、冒号。</li>
+  <li>改完代码必须<strong>重新执行</strong>才生效，别盯着旧报错继续查。</li>
+</ul>
+
+<h3>7. .env 里的密码没改，值还是模板占位符</h3>
+
+<h4>现象</h4>
+<p>建表做完了，<code>config.py</code> 也写对了，但打印出来的密码是：</p>
+<pre><code>'change_me_to_your_mysql_password'</code></pre>
+
+<h4>根因</h4>
+<p><code>.env</code> 是从 <code>.env.example</code> 复制来的，里面那句 <code>DB_PASSWORD=change_me_to_your_mysql_password</code> 是<strong>占位符</strong>，需要替换成真实密码，但当时漏做了。</p>
+<p><strong>为什么前面没暴露</strong>：v1 的 <code>config.py</code>、<code>db.py</code>、<code>ids.py</code> <strong>都不连库</strong>，所以直到真正连库的那一步才炸。</p>
+
+<h4>怎么修</h4>
+<p>打开 <code>.env</code>，把那一行改成自己的 MySQL root 密码，保存。</p>
+<p>怎么验证（这一步很关键，别只看文件）：</p>
+<pre><code>python -c "from app import config; print(repr(config.DB_PASSWORD))"</code></pre>
+<p>打印出来的应该是你自己的密码，而不是 <code>change_me_...</code>。</p>
+
+<h4>下次怎么避免</h4>
+<p>复制模板之后立刻改，别留到"以后要用的时候再说"。占位符和真值长得相似的配置项，最容易被跳过。</p>
+
+<h2 id="section-4">三、终端与命令行</h2>
+
+<h3>8. cd D:\... 跨盘符静默失败</h3>
+
+<h4>现象</h4>
+<pre><code>cd D:\dev\shortlink
+git add .
+# fatal: not a git repository (or any of the parent directories): .git</code></pre>
+<p>看提示符才发现：<strong>人还在 <code>C:\Users\me&gt;</code></strong>。<code>cd</code> 没报错，但也没生效。</p>
+
+<h4>根因</h4>
+<p>cmd 里 <strong><code>cd</code> 不能跨盘符切换</strong>。它只是"记住 D 盘下次该进哪个目录"，人还在 C 盘。而且它<strong>不报错</strong>，<code>cd</code> 成功时也是零输出，所以这一步失败时毫无提示。</p>
+
+<h4>怎么修</h4>
+<pre><code>cd /d D:\dev\shortlink</code></pre>
+<p><code>/d</code> 参数就是为跨盘符准备的。等价写法：</p>
+<pre><code>D:
+cd \dev\shortlink</code></pre>
+<p>怎么判断成功：<strong>只能看提示符</strong>。</p>
+<pre><code>C:\Users\me&gt;                   ← 没进去
+D:\dev\shortlink&gt;     ← 进去了</code></pre>
+<p><code>cd</code> 成功不打印任何东西，所以"敲完没输出"不等于失败。不确定就单独敲一条 <code>cd</code>（不带参数），它会打印当前目录。</p>
+<p><strong>这个坑在 v1 里踩了三次</strong>，每次都是<strong>新开了一个 cmd 窗口</strong>：</p>
+<p class="note-warn">cmd 不记忆跨窗口的工作目录。每开一个新窗口，工作目录都回到 <code>C:\Users\me&gt;</code>。</p>
+<p><strong>更省事的入口</strong>：文件资源管理器进到项目目录，点顶部地址栏，全选删掉、输入 <code>cmd</code>，回车。新窗口天生就在这个目录里，不用再 cd。</p>
+<p><strong>最危险的一条</strong>：如果不小心在 <code>C:\Users\me</code> 里敲了 <code>git init</code>，会把<strong>整个用户主目录</strong>变成一个 Git 仓库，之后桌面上动任何文件都会被它跟踪。幸好三次都赶在 <code>git init</code> 之前拦住了。</p>
+
+<h3>9. curl 的 ^ 多行续行吞掉 -d 参数</h3>
+
+<h4>现象</h4>
+<pre><code>curl -X POST http://127.0.0.1:8000/api/links ^
+  -H "Content-Type: application/json" ^
+  -d "{\"url\": \"https://www.baidu.com\"}"</code></pre>
+<p>返回：</p>
+<pre><code>{"detail":[{"type":"missing","loc":["body"],"msg":"Field required"}]}</code></pre>
+<p><code>-d</code> 的请求体<strong>根本没发出去</strong>。</p>
+
+<h4>根因</h4>
+<p>cmd 用 <code>^</code> 做换行续行，但配合引号、花括号、转义时解析经常出错，<code>-d</code> 那一整段被吞掉。另外注意：<code>curl</code> 在 PowerShell 里是 <code>Invoke-WebRequest</code> 的别名，语法完全不同，所以命令要在 <strong>cmd</strong> 里敲。</p>
+
+<h4>怎么修</h4>
+<p><strong>一律写成单行</strong>，不要用 <code>^</code> 续行：</p>
+<pre><code>curl -X POST http://127.0.0.1:8000/api/links -H "Content-Type: application/json" -d "{\"url\": \"https://www.baidu.com\"}"</code></pre>
+<p>cmd 里的引号规则实测：</p>
+<table>
+  <thead><tr><th>写法</th><th>结果</th></tr></thead>
+  <tbody>
+    <tr><td><code>-d "{\"url\": \"https://x.com\"}"</code></td><td>正确</td></tr>
+    <tr><td><code>-d '{url: ...}'</code></td><td>单引号 cmd 不识别，<code>json_invalid</code></td></tr>
+  </tbody>
+</table>
+<p>顺带一条最好用的 flag 组合（自动化测试的雏形）：</p>
+<pre><code>curl -s -o NUL -w "status=%{http_code} redirect=%{redirect_url}" http://127.0.0.1:8000/000001
+# status=302 redirect=https://www.baidu.com/</code></pre>
+<p>把响应的关键信息压成一行，以后写压测脚本正好用。</p>
+
+<h3>10. SQL 敲进了 cmd 而不是 mysql&gt;</h3>
+
+<h4>现象</h4>
+<pre><code>C:\Users\me&gt; TRUNCATE TABLE links;
+'TRUNCATE' 不是内部或外部命令，也不是可运行的程序或批处理文件。</code></pre>
+
+<h4>根因</h4>
+<p><code>TRUNCATE</code> 是 SQL 语句，只能在 <code>mysql&gt;</code> 客户端里执行。cmd 把它当成了"某个不存在的程序"。</p>
+
+<h4>怎么修</h4>
+<pre><code>cd /d D:\ProgramFiles\MySQL\MySQL80\bin
+mysql -u root -p</code></pre>
+<p>看到提示符变成 <code>mysql&gt;</code> 之后：</p>
+<pre><code>USE shortlink;
+TRUNCATE TABLE links;
+exit</code></pre>
+<p><code>exit</code> 不用加分号。</p>
+
+<h4>下次怎么避免</h4>
+<p>敲任何命令前先看一眼<strong>当前提示符</strong>，它决定这条命令归谁管。</p>
+<table>
+  <thead><tr><th>提示符</th><th>归谁管</th></tr></thead>
+  <tbody>
+    <tr><td><code>C:\Users\me&gt;</code></td><td>cmd，只能敲系统命令和 git</td></tr>
+    <tr><td><code>mysql&gt;</code></td><td>MySQL，只能敲 SQL，语句以 <code>;</code> 结尾</td></tr>
+    <tr><td><code>-&gt;</code></td><td>上一条 SQL 还没写完（少了个引号或分号）</td></tr>
+    <tr><td><code>(venv)</code></td><td>已激活 Python 虚拟环境</td></tr>
+  </tbody>
+</table>
+
+<h3>11. 浏览器直接访问 POST 接口得到 405</h3>
+
+<h4>现象</h4>
+<p>在浏览器地址栏输入 <code>http://127.0.0.1:8000/api/links</code>，得到：</p>
+<pre><code>{"detail":"Method Not Allowed"}</code></pre>
+<p>响应头里带 <code>allow: POST</code>。</p>
+
+<h4>根因</h4>
+<p><code>/api/links</code> 只接受 <code>POST</code>（创建），而<strong>浏览器地址栏发的是 <code>GET</code></strong>。方法不匹配，于是 405。</p>
+
+<h4>怎么修</h4>
+<ul>
+  <li>想用浏览器点着测：打开 <code>/docs</code>，找到 <code>POST /api/links</code>，点 Try it out，再点 Execute</li>
+  <li>想用命令行测：<code>curl -X POST ...</code></li>
+</ul>
+<p>顺带记住几种错误码分别是谁拒的：</p>
+<table>
+  <thead><tr><th>状态码</th><th>谁拒绝的</th><th>典型原因</th></tr></thead>
+  <tbody>
+    <tr><td>400</td><td><strong>你的代码</strong></td><td>url 不以 <code>http://</code> 开头、超过 2048 字符</td></tr>
+    <tr><td>404</td><td><strong>你的代码</strong></td><td>短码在库里不存在</td></tr>
+    <tr><td>405</td><td><strong>FastAPI 框架</strong></td><td>方法不对（该 POST 用了 GET），根本没进你的函数</td></tr>
+    <tr><td>422</td><td><strong>FastAPI 框架（pydantic）</strong></td><td>请求体不符合模型，比如漏了 <code>Content-Type: application/json</code></td></tr>
+  </tbody>
+</table>
+<p><strong>400 和 404 是你写的业务逻辑在起作用，405 和 422 是框架在之前就把请求拦住了</strong>，排查时先看这个区别，能省一半时间。</p>
+
+<h3>12. short_url 里的端口和服务的实际端口不一致</h3>
+
+<h4>现象</h4>
+<p>把服务起在 8126 端口，创建接口返回的却是：</p>
+<pre><code>{"short_url": "http://127.0.0.1:8000/000001"}</code></pre>
+<p>端口不对，但这个地址点不开（服务不在 8000）。</p>
+
+<h4>根因</h4>
+<p><code>short_url</code> 是用 <code>.env</code> 里的 <code>BASE_URL</code> 拼出来的，<strong>跟服务实际监听的端口无关</strong>：</p>
+<pre><code>return CreateLinkResp(code=code, short_url=f"{config.BASE_URL}/{code}")</code></pre>
+
+<h4>怎么修</h4>
+<p>改 <code>.env</code>：</p>
+<pre><code>BASE_URL=http://127.0.0.1:8126</code></pre>
+<p>改完要<strong>重启 uvicorn</strong> 才生效（<code>load_dotenv()</code> 只在进程启动时读一次）。</p>
+
+<h4>下次怎么避免</h4>
+<p>记住 <code>BASE_URL</code> 和 <code>--port</code> 是<strong>两个独立的开关</strong>，改一个必须同步改另一个。这也是 v6 上线时的关键配置项：<strong>部署到服务器后，<code>BASE_URL</code> 要换成真实域名</strong>，否则返回的短链全指向 <code>127.0.0.1</code>。</p>
+
+<h2 id="section-5">四、Git 与网络</h2>
+
+<h3>13. 本机根本没装 Git</h3>
+
+<h4>现象</h4>
+<pre><code>git --version
+'git' 不是内部或外部命令，也不是可运行的程序或批处理文件。</code></pre>
+
+<h4>根因</h4>
+<p>系统里确实没有 Git。<code>C:\Program Files\Git</code>、<code>D:\Git</code>、<code>%LOCALAPPDATA%\Programs\Git</code> 全不存在，<strong>VS Code 也不自带 Git</strong>（很多人以为自带了，其实 VS Code 只是"调用"系统里的 git）。</p>
+
+<h4>怎么修</h4>
+<pre><code>winget install --id Git.Git -e --source winget</code></pre>
+<p>装到 <code>C:\Program Files\Git\</code>，版本 2.55.0。</p>
+<p><strong>装完必须重开 cmd</strong>，因为 PATH 是进程启动时读的，老窗口认不出新装的程序。</p>
+
+<h4>怎么验证</h4>
+<pre><code>cd /d D:\dev\shortlink
+git --version    # git version 2.55.0.windows.3</code></pre>
+
+<h3>14. nothing added to commit but untracked files present</h3>
+
+<h4>现象</h4>
+<pre><code>git commit -m "feat: v1 最小闭环"
+# On branch master
+# nothing added to commit but untracked files present (use "git add" to track)</code></pre>
+
+<h4>根因</h4>
+<p><strong>少敲了 <code>git add .</code></strong>。Git 的提交是两阶段的：</p>
+<pre><code>工作区(你写的文件)  --git add-->  暂存区(待提交清单)  --git commit-->  仓库(历史)</code></pre>
+<p><code>git commit</code> <strong>只提交暂存区里的东西</strong>。文件还没 add，暂存区是空的，自然没东西可提。</p>
+
+<h4>怎么修</h4>
+<pre><code>git add .
+git status        # 安全检查点
+git commit -m "feat: v1 最小闭环，创建短链与 302 跳转"</code></pre>
+<p>颜色法则（<code>git status</code> 里）：</p>
+<table>
+  <thead><tr><th>颜色</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td><strong>红</strong></td><td>还没 add，不会被提交</td></tr>
+    <tr><td><strong>绿</strong></td><td>已 add，会被提交</td></tr>
+  </tbody>
+</table>
+<p>顺带一个好习惯：<code>git add .</code> 之后<strong>别直接 commit</strong>，先 <code>git status</code> 扫一眼绿色列表。这一次的 <code>git status</code> 就是一份"安全证明"，它确认了 <code>.env</code> <strong>不在</strong>列表里：</p>
+<pre><code>.env.example     ← 模板，该提交
+.gitignore
+README.md
+app/
+requirements.txt
+schema.sql
+verify.sql</code></pre>
+<p><strong>没有 <code>.env</code></strong>，而磁盘上 <code>.env</code> 确实存在（里面有真实的 MySQL 密码）。说明 <code>.gitignore</code> 里的 <code>.env</code> 规则正在生效。想再确认一道：</p>
+<pre><code>git check-ignore -v .env
+# .gitignore:14:.env</code></pre>
+
+<h3>15. fatal: not a git repository (or any of the parent directories): .git</h3>
+
+<h4>现象</h4>
+<pre><code>git remote add origin https://github.com/FMY-666/shortlink.git
+# fatal: not a git repository (or any of the parent directories): .git</code></pre>
+<p>四条 Git 命令全部报同一个错。</p>
+
+<h4>根因</h4>
+<p><strong>不在项目目录里</strong>（站在 <code>C:\Users\me&gt;</code>）。Git 从当前目录<strong>逐级往上</strong>找 <code>.git</code>，一路找到 <code>C:\</code> 也没有，就报这句。</p>
+<p><strong>为什么中间两条 <code>git config --global</code> 却成功了</strong>：<code>--global</code> 写的是全局配置文件，<strong>跟当前目录无关</strong>。</p>
+
+<h4>怎么修</h4>
+<pre><code>cd /d D:\dev\shortlink</code></pre>
+<p>然后重跑那四条命令。</p>
+<p><strong>这次没有任何损害</strong>，四条命令的性质都是"查看或设置"，失败等于没做事，不是做错事。<strong>唯一真危险的是 <code>git init</code></strong>：在 <code>C:\Users\me</code> 里 init 会把整个用户主目录变成 Git 仓库。（已核实：<code>C:\Users\me\.git</code> 不存在，没误建。）</p>
+
+<h3>16. Recv failure: Connection was reset / Could not connect to server</h3>
+
+<h4>现象</h4>
+<pre><code>git push -u origin main
+# Recv failure: Connection was reset</code></pre>
+<p>稍后再试，换成另一种错：</p>
+<pre><code>Failed to connect to github.com port 443 after 21098 ms: Could not connect to server</code></pre>
+<p><strong>这两句的区别很重要</strong>：</p>
+<table>
+  <thead><tr><th>报错</th><th>含义</th><th>进度</th></tr></thead>
+  <tbody>
+    <tr><td><code>Recv failure: Connection was reset</code></td><td>连上了，但传输中被<strong>中途掐断</strong></td><td>走了一半</td></tr>
+    <tr><td><code>Failed to connect ... after 21098 ms</code></td><td>熬了 21 秒<strong>连接都没建立起来</strong></td><td>还没开始</td></tr>
+  </tbody>
+</table>
+
+<h4>根因</h4>
+<p><strong>本机直连 GitHub 不通</strong>（国内网络访问 GitHub 时通时断是常态）。排查过程（都是只读检查）：</p>
+<table>
+  <thead><tr><th>检查</th><th>结果</th></tr></thead>
+  <tbody>
+    <tr><td>连 <code>www.baidu.com</code></td><td>200 OK</td></tr>
+    <tr><td>连 <code>github.com</code></td><td><strong>超时</strong></td></tr>
+    <tr><td>Windows 系统代理</td><td><strong>关着</strong>（<code>ProxyEnable=0</code>），但残留地址 <code>127.0.0.1:7890</code></td></tr>
+    <tr><td>git 有没有配代理</td><td>没配</td></tr>
+    <tr><td>有代理软件在跑吗</td><td><strong>没有</strong>（7890 等端口都没在监听）</td></tr>
+  </tbody>
+</table>
+<p><code>127.0.0.1:7890</code> 这个残留地址是关键线索：<strong>7890 是 Clash 的默认端口</strong>，说明以前装过代理工具，只是当时没打开。</p>
+
+<h4>怎么修</h4>
+<p>打开代理软件，让 git 也走它：</p>
+<pre><code>git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+git push -u origin main</code></pre>
+<p>端口跟软件里显示的 <strong>HTTP 端口</strong>一致：</p>
+<table>
+  <thead><tr><th>软件</th><th>常见端口</th></tr></thead>
+  <tbody>
+    <tr><td>Clash</td><td>7890</td></tr>
+    <tr><td>v2rayN</td><td>10809</td></tr>
+    <tr><td>Clash Verge</td><td>7897</td></tr>
+  </tbody>
+</table>
+<p><strong>配完立刻就能连上了</strong>，说明代理一直在工作，只是 git 不知道它存在。（浏览器走"系统代理"设置，git 只认自己的 <code>http.proxy</code>，<strong>两套配置互不相通</strong>。）</p>
+
+<h4>一个要记住的规则</h4>
+<p>这台机器上<strong>代理配置必须保留</strong>，不能推完就删：</p>
+<ul>
+  <li>代理软件<strong>开着</strong>，git 能推</li>
+  <li>代理软件<strong>关着</strong>，报 <code>Failed to connect to 127.0.0.1:7890</code>，这不是坏了，把软件打开就行</li>
+</ul>
+<p>只有将来换到一个<strong>能直连 GitHub 的网络</strong>时，才需要清掉：</p>
+<pre><code>git config --global --unset http.proxy
+git config --global --unset https.proxy</code></pre>
+<p><strong>另一个顺手可试的办法</strong>：<code>git config --global http.version HTTP/1.1</code>。有些网络设备会干扰 HTTP/2 的连接复用，症状正好是 <code>Connection was reset</code>。</p>
+<p><strong>网络不通时最省事的一招</strong>：<strong>手机开热点、电脑连热点</strong>再 push。校园网对 GitHub 的限制比流量网络更狠。</p>
+<p class="note-warn">好消息：网络不通<strong>不会损坏任何东西</strong>。提交和 remote 都老老实实躺在本地仓库里，网络一通只需要再敲一条 <code>git push</code>，前面的步骤一个都不用重做。</p>
+
+<h3>17. git log 中文乱码 —— 虚惊一场</h3>
+
+<h4>现象</h4>
+<pre><code>git log --oneline
+# 0efabea feat: v1 鏈€灏忛棴鐜紝鍒涘缓鐭摼涓?302 璺宠浆</code></pre>
+<p>提交信息里的中文全是乱码，一度以为提交时存坏了。</p>
+
+<h4>根因</h4>
+<p><strong>仓库里存的是好的，是"看的人"编码错配了。</strong></p>
+<p>用 Python 取原始字节验证：</p>
+<pre><code>subprocess.run([git, "-C", repo, "log", "--format=%s", "-1"], capture_output=True)
+# raw hex => ... 76 31 20 e6 9c 80 e5 b0 8f ...</code></pre>
+<p><code>e69c80</code> 正是「最」字的 <strong>UTF-8</strong> 编码。用 <code>utf-8</code> 解码完全正常，用 <code>gbk</code> 解码才是那串乱码，是读取管道按错误编码解码造成的。</p>
+<p>最终确认：GitHub 网页上渲染正常。</p>
+
+<h4>下次怎么避免</h4>
+<p><strong>中文乱码先怀疑"显示端"，别怀疑"存储端"。</strong>验证顺序：</p>
+<ol>
+  <li>直接开 GitHub 网页看（最硬的裁判）</li>
+  <li>用 Python 取原始字节自己解码</li>
+  <li><strong>不要</strong>急着 <code>git commit --amend</code>，那是在改一个根本没坏的东西</li>
+</ol>
+
+<h3>18. warning: LF will be replaced by CRLF —— 不是错误</h3>
+
+<h4>现象</h4>
+<pre><code>git add .
+# warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it</code></pre>
+
+<h4>根因</h4>
+<p><code>core.autocrlf=true</code> 的正常提示。Windows 用 <code>CRLF</code> 换行，Linux、macOS、GitHub 用 <code>LF</code>，git 提交时自动把 CRLF 转成 LF 存进仓库、检出时再转回来。</p>
+
+<h4>怎么处理</h4>
+<p>不用处理。看到 <code>warning:</code> 前缀就知道它不是错误。真正的错误是 <code>error:</code> 或 <code>fatal:</code>。</p>
+<table>
+  <thead><tr><th>前缀</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td><code>warning:</code></td><td>提醒，操作已成功，可以忽略</td></tr>
+    <tr><td><code>error:</code></td><td>这个操作没做成，但 git 还在跑</td></tr>
+    <tr><td><code>fatal:</code></td><td>严重错误，git 直接停下了</td></tr>
+  </tbody>
+</table>
+
+<h2 id="section-6">五、v2 新增：Redis 与缓存（19—22）</h2>
+
+<h3>19. Windows 版 redis-cli 把 * 当本地文件名展开</h3>
+
+<h4>现象</h4>
+<pre><code>D:\dev\shortlink&gt;D:\ProgramFiles\Redis\redis-cli.exe keys *
+(error) ERR wrong number of arguments for 'keys' command</code></pre>
+<p>同一条命令，网上所有教程都这么写，偏偏这里报错。</p>
+
+<h4>根因</h4>
+<p>Windows 版的 <code>redis-cli</code> 在解析参数时，会<strong>先把带通配符的参数当本地文件名展开一遍</strong>。你在项目目录里敲 <code>keys *</code>，<code>*</code> 被换成了当前目录的文件名 —— 当时 <code>shortlink/</code> 下有 18 个条目，于是 Redis 收到的是「KEYS 命令带了 18 个参数」，它当然要抱怨参数数量不对。</p>
+
+<h4>怎么证明</h4>
+<p>隔离实验，判据很干脆：</p>
+<table>
+  <thead><tr><th>在哪敲 <code>keys *</code></th><th>结果</th></tr></thead>
+  <tbody>
+    <tr><td><code>D:\dev\shortlink</code>（有 18 个条目）</td><td><code>ERR wrong number of arguments</code></td></tr>
+    <tr><td>一个<strong>空目录</strong>（无文件可展开）</td><td><code>link:000001</code> ✓</td></tr>
+  </tbody>
+</table>
+<p>同一条命令、同一个 Redis 服务，<strong>只换当前目录，结果就反转</strong> —— 说明问题在"本地文件"，不在 Redis。</p>
+
+<h4>怎么修</h4>
+<pre><code>D:\ProgramFiles\Redis\redis-cli.exe --scan                 # 推荐
+D:\ProgramFiles\Redis\redis-cli.exe keys "link:*"          # 也可以</code></pre>
+<ul>
+  <li><code>--scan</code> <strong>完全没有通配符</strong>，一步到位，而且底层用的是 <code>SCAN</code>。</li>
+  <li><code>keys "link:*"</code> 之所以能用：带上前缀后，当前目录里没有任何以 <code>link:</code> 开头的文件，通配符<strong>原样</strong>传给了 Redis。</li>
+  <li>加引号救不了裸 <code>*</code>：cmd 会先把引号剥掉，退化成 <code>*</code> 又被展开一次。</li>
+</ul>
+
+<h4>下次怎么避免</h4>
+<p>需要遍历键就默认用 <code>--scan</code>，别用 <code>keys</code>。这条命令还有第二层理由：<strong><code>KEYS</code> 是 O(N) 阻塞命令</strong> —— Redis 是单线程的，几百万键的库上执行一次能把整个服务卡住好几秒，<strong>生产环境直接禁用</strong>，官方文档明说该用 <code>SCAN</code>（分批游标、可中断）。那个报错反而把我从一条禁用命令上推开了。</p>
+
+<h3>20. cmd 不支持多行粘贴</h3>
+
+<h4>现象</h4>
+<pre><code>D:\dev\shortlink&gt;python -c "from app import db
+D:\dev\shortlink&gt;with db.get_conn() as c:
+'with' 不是内部或外部命令，也不是可运行的程序或批处理文件。</code></pre>
+
+<h4>根因</h4>
+<p><strong>cmd 按回车切命令，不像 bash 会等引号闭合。</strong>你一回车，它就把 <code>python -c "from app import db</code> 当成一条完整命令执行了（引号没闭合），下一行的 <code>with db.get_conn() as c:</code> 被当成<strong>一条新命令</strong>，去系统里找名叫 <code>with</code> 的程序。</p>
+
+<h4>识别法（很有用）</h4>
+<p><code>XXX 不是内部或外部命令</code> 这个错，要看 XXX 是什么：</p>
+<table>
+  <thead><tr><th>XXX 是</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>你本来就想敲的程序名（如 <code>myslq</code>）</td><td>拼错了，或程序不在 PATH 上</td></tr>
+    <tr><td>编程语言关键字（<code>with</code> / <code>for</code> / <code>import</code>）</td><td><strong>把代码当命令敲了</strong>，或命令被断成了几行</td></tr>
+  </tbody>
+</table>
+
+<h4>怎么修</h4>
+<p>一条命令写在一行。查数据就用 <code>-e</code>：</p>
+<pre><code>mysql -u root -p -e "SELECT id, code, url, clicks FROM shortlink.links;"</code></pre>
+<p><code>-e</code> 执行完即退出，不用进 <code>mysql&gt;</code> 交互界面。顺带：<code>mysql</code> 已经在本机 PATH 上，<strong>不用 <code>cd</code> 到 MySQL 的 bin 目录</strong>。</p>
+
+<h3>21. Redis 窗口被关掉 = 服务停掉（不是关日志界面）</h3>
+
+<h4>现象</h4>
+<pre><code>D:\ProgramFiles\Redis&gt;redis-cli.exe ping
+Could not connect to Redis at 127.0.0.1:6379: Connection refused</code></pre>
+
+<h4>怎么判断是"崩溃"还是"正常退出"</h4>
+<p>这一步很值：</p>
+<table>
+  <thead><tr><th>检查</th><th>本次结果</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td><code>dump.rdb</code> 修改时间</td><td>与停止时间吻合</td><td>退出前<strong>正常落盘</strong>了</td></tr>
+    <tr><td><code>redis_6379.pid</code></td><td>不存在</td><td>退出时<strong>清理过现场</strong></td></tr>
+  </tbody>
+</table>
+<p><strong>崩溃不会落盘、也不会清 pid 文件。</strong>所以那是被正常关闭的。</p>
+<p>为什么查无对证？<code>redis.conf</code> 里写着 <code>logfile ""</code> —— <strong>空字符串 = 日志只打在屏幕上，不写文件</strong>，窗口一关，它说过什么就全没了。</p>
+
+<h4>怎么修</h4>
+<p>双击目录里的 <code>redis-start.bat</code>。它内部用的是：</p>
+<pre><code>start "Redis 8.10.2" /min redis-server.exe redis.conf</code></pre>
+<p><code>start</code> 的意思是<strong>另开一个窗口去跑</strong>，所以双击出来的那个窗口关掉<strong>不影响</strong> Redis。要正经停就用 <code>redis-stop.bat</code>（等于 <code>redis-cli shutdown save</code>，会落盘）。</p>
+
+<h4>下次怎么避免</h4>
+<p><strong>Redis / uvicorn / 数据库这类"服务"，就是"活着的进程"。关掉它的窗口 = 停掉这项服务</strong>，不是"关掉一个看日志的界面"。这是新手最容易误解的一点。</p>
+<p>从 v2 开始你手里要<strong>常驻两个窗口</strong>：一个跑 Redis（最小化）、一个跑 uvicorn（前台看日志），再加上敲命令的第三个。v3～v6 都是这个格局，早点习惯。</p>
+
+<h3>22. TypeError: _run() takes 12 positional arguments but 13 were given</h3>
+
+<h4>现象</h4>
+<p><code>bench.py</code> 在<strong>预热阶段</strong>就崩了，一个请求都没发出去：</p>
+<pre><code>TypeError: _run() takes 12 positional arguments but 13 were given</code></pre>
+
+<h4>根因</h4>
+<p>调用链有三层：<code>main()</code> → <code>_run()</code> → <code>_worker()</code>。给最内层的 <code>_worker()</code> 加一个 <code>--json-url</code> 参数时，<strong>两头都改了，漏了中间那层 <code>_run()</code></strong>。于是 <code>main()</code> 递过去 13 个参数，<code>_run()</code> 只有 12 个位置接。</p>
+
+<h4>为什么 py_compile 没抓到</h4>
+<p>因为它<strong>只查语法，不查"参数个数对不对"</strong>。参数个数是<strong>运行时</strong>才检查的。这三类错误报的时机完全不同，值得背下来：</p>
+<table>
+  <thead><tr><th>错误</th><th>什么时候报</th><th>典型场景</th></tr></thead>
+  <tbody>
+    <tr><td><code>SyntaxError</code></td><td>文件<strong>还没跑起来</strong></td><td>漏括号、缩进错、文件没敲完</td></tr>
+    <tr><td><code>TypeError</code></td><td>跑起来、<strong>执行到那一行</strong></td><td>参数个数不对、<code>None</code> 当函数调</td></tr>
+    <tr><td><code>IntegrityError</code></td><td>数据库<strong>拒绝</strong>时</td><td>collation 把短码判重复（第 1 条）</td></tr>
+  </tbody>
+</table>
+<p><strong>能编译 ≠ 能跑</strong>，这是三层里最浅的一层。</p>
+
+<h4>怎么修</h4>
+<p>给 <code>_run()</code> 补上 <code>json_url</code>，并继续透传给 <code>_worker()</code>。</p>
+
+<h4>下次怎么避免</h4>
+<p><strong>改了函数签名，必须检查全部调用点 —— 尤其是链条中间那层。</strong>两头最容易想起来，中间那层最容易漏。</p>
+
+<h2 id="section-7">六、这些坑怎么用在面试里</h2>
+
+<p>面试官问"遇到最难的问题是什么"时，<strong>不要讲"环境装不上"这类</strong>，那体现不出工程能力。挑下面这三个：</p>
+
+<h3>① collation 那个（首选）</h3>
+<p>"我实现了一个 62 进制的短码生成器，字母表是数字加大小写字母。前 35 条创建全正常，第 36 条开始全部 500 报唯一键冲突。</p>
+<p>排查后发现，我在建表时 <code>code</code> 列只写了 <code>VARCHAR(16)</code>，没指定 collation。MySQL 8 给 utf8mb4 的默认排序规则是 <code>utf8mb4_0900_ai_ci</code>，<code>ci</code> 是大小写不敏感，于是索引 10 号生成的小写 <code>00000a</code> 和索引 36 号生成的大写 <code>00000A</code> 被判为同一个值。<strong>我的字母表有 62 个字符，但数据库只认 36 个。</strong></p>
+<p>修复是给这一列显式加 <code>COLLATE utf8mb4_bin</code>。改完在 60 并发下从 35 成功、25 失败变成 60 全成功。</p>
+<p>这件事让我记住两点：一是<strong>凡是参与唯一性判断的字符串列都要显式指定 collation</strong>，默认值是给人类搜索用的，不是给机器比对用的；二是这个 bug 只在第 36 条之后才暴露，<strong>单元测试永远抓不到</strong>，必须跨边界测或者用并发压测扫。"</p>
+<p class="note">为什么这条值钱：它同时展示了能定位到根因（不是靠猜）、知道数据库默认值背后的坑、有量化对比、提炼出了可复用的原则。</p>
+
+<h3>② 跨盘符 cd 静默失败</h3>
+<p>"Git 命令连续报了三次 <code>not a git repository</code>。我一开始以为是仓库坏了，后来发现是自己站在用户主目录里操作，<strong>cmd 的 <code>cd</code> 不能跨盘符，而且失败时既不报错也没有输出</strong>。从那以后我养成了习惯：每个新开的终端窗口，第一件事就是进目录并确认提示符。"</p>
+<p class="note">为什么这条值钱：展示的是排查纪律，以及"失败要能看得见"这个工程直觉。而且能顺势聊到"如果当时误在主目录执行了 <code>git init</code> 会有什么后果"。</p>
+
+<h3>③ HTTP/2 连接复用被中间设备干扰</h3>
+<p>"push 一直失败，报 <code>Connection was reset</code>。逐层排查：百度通、GitHub 超时、系统代理关着但有残留端口、git 没配代理。最后定位到本机直连 GitHub 不通，让 git 走本地代理端口后立刻成功。中间还试过把 HTTP 版本降回 1.1，因为有些网络设备会干扰 HTTP/2 的连接复用，症状正好是 reset。"</p>
+<p class="note">为什么这条值钱：这是分层排查的范例，先分清"网络层"还是"应用层"，再逐层收窄，而不是乱试命令。</p>
+
+<h3>④ 一次"平台差异"的排查（Windows 下 keys * 报参数错）</h3>
+<p>比 collation 更轻快，两分钟就能讲完，适合面试开场暖场：</p>
+<p>"我用 Redis 的时候，敲 <code>keys *</code> 一直报"参数数量不对"，但所有教程都这么写。我先怀疑是自己敲错了，换个写法还是不行。后来做了个对照实验：<strong>同一条命令在一个空目录里执行就正常，在项目目录里就报错</strong> —— 这才定位到是 Windows 版的 redis-cli 会把 <code>*</code> 当本地文件名展开，项目目录里文件多，于是被展开成一长串参数。这件事给我两个收获：一是排查诡异问题时要<strong>控制变量做对照</strong>；二是顺着它发现 <strong><code>KEYS</code> 这个命令在生产环境本来就是禁用的</strong> —— 它是 O(N) 阻塞命令，会把单线程的 Redis 卡住，生产要改用 <code>SCAN</code>。所以那个报错反而帮了我。"</p>
+<p class="note">为什么这条值得讲：它展示的不是"我会用 Redis"，而是"遇到反直觉的现象时，我会设计一个实验把它钉死，而不是乱试命令"。</p>
+
+<h2 id="section-8">附：当前状态（v1 → v2）</h2>
+
+<h4>接口</h4>
+<table>
+  <thead><tr><th>方法</th><th>路径</th><th>作用</th><th>成功</th><th>失败</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET</code></td><td><code>/health</code></td><td>部署探活</td><td>200</td><td>—</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/links</code></td><td>创建短链</td><td>200</td><td>400（url 非法）/ 422（格式错）</td></tr>
+    <tr><td><code>GET</code></td><td><code>/{code}</code></td><td>302 跳转 + 点击数 +1</td><td>302</td><td>404（短码不存在）</td></tr>
+  </tbody>
+</table>
+
+<h4>表结构</h4>
+<pre><code>CREATE TABLE links (
+  id     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  code   VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  url    VARCHAR(2048) NOT NULL,
+  clicks BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;</code></pre>
+
+<h4>为什么 code 允许为 NULL</h4>
+<p>短码是由自增 id 算出来的，而 id 只有插入之后才知道。所以流程是"先插入一行 code 为 NULL 的记录，拿到 <code>lastrowid</code>，算出短码，再 <code>UPDATE</code> 回填"。MySQL 的唯一索引允许多个 NULL 值，所以这一步不会冲突。</p>
+
+<h4>v2 改变的东西</h4>
+<table>
+  <thead><tr><th>文件 / 部分</th><th>变化</th></tr></thead>
+  <tbody>
+    <tr><td><code>app/cache.py</code></td><td>新增。模块级 Redis 连接池 + 缓存键 <code>link:{code}</code></td></tr>
+    <tr><td><code>app/main.py</code></td><td><code>GET /{code}</code> 从"直接查库"改为 <strong>Cache-Aside</strong>：先查缓存 → 未命中回源 → 写回缓存</td></tr>
+    <tr><td>空值缓存</td><td>查不到的短码写空字符串进缓存，TTL 只给 60 秒，挡住"反复请求同一个不存在的短码"</td></tr>
+    <tr><td>点击计数</td><td>只在<strong>回源</strong>时 +1。命中缓存的访问不再计数（v2 的主动取舍）</td></tr>
+  </tbody>
+</table>
+
+<h4>v2 实测（同一台机器，-c 50 -d 15）</h4>
+<table>
+  <thead><tr><th>指标</th><th>v1 无缓存</th><th>v2 有缓存</th><th>变化</th></tr></thead>
+  <tbody>
+    <tr><td>QPS</td><td>44.2</td><td><strong>1340.5</strong></td><td><strong>涨 30.3 倍</strong></td></tr>
+    <tr><td>平均延迟</td><td>1124 ms</td><td>37.3 ms</td><td>降到 3.3%</td></tr>
+    <tr><td>P99</td><td>1701 ms</td><td>62.4 ms</td><td>降到 3.7%</td></tr>
+    <tr><td>Redis 命中率</td><td>—</td><td>99.99%</td><td>22716 命中 / 3 未命中</td></tr>
+    <tr><td><code>clicks</code> 增长</td><td>+797（685 请求）</td><td><strong>0</strong>（20142 请求）</td><td>v2 的取舍</td></tr>
+  </tbody>
+</table>
+<p><strong>这组数字为什么可信</strong>：用利特尔法则校验 <code>并发数 = QPS × 平均延迟</code> —— v1 是 <code>44.2 × 1.124 = 49.7</code>，v2 是 <code>1340.5 × 0.0373 = 50.0</code>，都等于并发数 50，说明两次都是"50 条连接全部跑满"的饱和状态，不是在量空转或预热。</p>
+
+<p class="note">本文档随项目演进持续更新。v3（布隆过滤器）之后会新增"缓存穿透 / 缓存雪崩 / 布隆误判"相关条目。</p>
+
+</div>
+</section>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# 统一行尾策略（Windows 开发 + 跨平台协作）
+#
+# 为什么需要这个文件：
+#   core.autocrlf=true 只能管"文本文件在仓库里怎么存"，它管不住 .bat
+#   这类对行尾敏感的文件。把规则写进 .gitattributes 后，规则跟着仓库走，
+#   换机器、别人 clone 都一样生效。
+#
+# 行尾是怎么被搞坏的（面试聊到可以讲）：
+#   同一份 .bat，CRLF 结尾在 cmd.exe 里正常；被转成 LF 结尾后，
+#   cmd 会把整段读成一坨，报一堆「'xxx' 不是内部或外部命令」。
+
+# ---- 默认规则：仓库内统一存 LF ----
+* text=auto eol=lf
+
+# ---- 对行尾敏感的文件：工作区必须保持 CRLF ----
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# ---- 二进制文件：禁止做任何行尾转换 ----
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.rdb binary
+
+# ---- GitHub 语言统计 ----
+# 文档型 HTML 有十几万字符，不加这行 GitHub 会把整个项目
+# 标成 "HTML"，后端项目看起来就很怪。标成文档即可排除。
+*.html linguist-documentation
