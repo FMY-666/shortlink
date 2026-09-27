@@ -2,7 +2,7 @@
 
 一个读多写少的高并发服务。把长链接压成 6 位短码，访问短码时 302 跳转回原网址。
 
-**状态：v1 最小闭环**（创建 + 跳转 + 点击统计）
+**状态：v1 已完成**（创建 + 跳转 + 点击统计）。下一站 v2：加 Redis 缓存。
 
 ## 这个项目在做什么
 
@@ -35,6 +35,57 @@ python -m uvicorn app.main:app --reload
 
 打开 http://127.0.0.1:8000/docs 可以看到交互式接口文档。
 
+## 怎么用
+
+服务起来之后，它就是一个"把长链接变短"的机器。三步就能跑通。
+
+### 1. 创建一条短链
+
+浏览器打开 <http://127.0.0.1:8000/docs>，展开 `POST /api/links` → 点 **Try it out** →
+把 Request body 改成下面这行 → 点 **Execute**：
+
+```json
+{"url": "https://www.baidu.com"}
+```
+
+服务器返回：
+
+```json
+{
+  "code": "000001",
+  "short_url": "http://127.0.0.1:8000/000001"
+}
+```
+
+`code` 是 6 位短码，`short_url` 是拼好的完整短链（前缀取自 `.env` 里的 `BASE_URL`）。
+
+不想点鼠标就用命令行：
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/links -H "Content-Type: application/json" -d "{\"url\":\"https://www.baidu.com\"}"
+```
+
+### 2. 访问短链
+
+把 `http://127.0.0.1:8000/000001` 粘进浏览器地址栏。页面跳到百度，
+**并且地址栏也从 `127.0.0.1:8000` 变成了 `www.baidu.com`** —— 这就是 302 在干活。
+
+### 3. 查点击统计
+
+每被访问一次，这条记录的 `clicks` 加 1：
+
+```sql
+USE shortlink;
+SELECT id, code, url, clicks FROM links ORDER BY id DESC LIMIT 5;
+```
+
+### 4. 停掉服务
+
+在跑 uvicorn 的那个窗口按 `Ctrl+C`。
+
+> **注意**：服务只在 `127.0.0.1:8000` 上监听，**只有你这台机器能访问，别人的手机打不开**。
+> 想给别人用，得等 v6 部署到云服务器。其他限制见文末的「已知问题」。
+
 ## 目录结构
 
 ```
@@ -46,8 +97,11 @@ shortlink/
 │   ├── ids.py         短码生成（自增 id → 62 进制）
 │   └── main.py        FastAPI 入口与路由
 ├── schema.sql         建库建表
+├── verify.sql         建表后的自检查询
+├── practice.sql       SQL 练习（用 mysql --force 跑）
 ├── requirements.txt
-└── .env.example
+├── .env.example       配置模板，复制成 .env 再填密码
+└── .gitignore
 ```
 
 ## 技术选型说明
