@@ -1,0 +1,19 @@
+# 虚拟环境
+.venv/
+venv/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 配置里的密码，绝对不能提交
+.env
+
+# 编辑器
+.vscode/
+.idea/
+
+# 系统
+.DS_Store
+Thumbs.db
