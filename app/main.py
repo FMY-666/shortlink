@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-from . import bloom, cache, config, db, ids
+from . import bloom, cache, config, db, ids, segment
 
 
 @asynccontextmanager
@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="ShortLink",
     description="一个读多写少的高并发短链服务",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -39,6 +39,13 @@ def health():
 
 @app.post("/api/links", response_model=CreateLinkResp)
 def create_link(req: CreateLinkReq):
+    """创建短链。
+
+    v4 改造：id 不再由数据库自增分配，而是从号段发号器里在内存中拿。
+    好处有两个：
+      1. 只需要写一次数据库（v1~v3 是 INSERT + UPDATE 两次）；
+      2. id 的来源和数据库解耦 —— 哪天真要换成雪花算法，只改发号器。
+    """
     url = req.url.strip()
 
     if not (url.startswith("http://") or url.startswith("https://")):
@@ -46,13 +53,15 @@ def create_link(req: CreateLinkReq):
     if len(url) > config.URL_MAX_LEN:
         raise HTTPException(status_code=400, detail=f"url 超过 {config.URL_MAX_LEN} 个字符")
 
+    new_id = segment.next_id()
+    code = ids.make_code(new_id, config.CODE_LEN)
+
     with db.get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("INSERT INTO links (code, url) VALUES (NULL, %s)", (url,))
-            new_id = cur.lastrowid
-
-            code = ids.make_code(new_id, config.CODE_LEN)
-            cur.execute("UPDATE links SET code = %s WHERE id = %s", (code, new_id))
+            cur.execute(
+                "INSERT INTO links (id, code, url) VALUES (%s, %s, %s)",
+                (new_id, code, url),
+            )
 
     # 新短码要立刻进过滤器，否则自己刚创建的短链会被判成「不存在」
     bloom.add(code)
