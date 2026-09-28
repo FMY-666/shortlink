@@ -1,10 +1,11 @@
+import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 
-from . import bloom, cache, config, db, ids, segment
+from . import bloom, cache, clicks, config, db, ids, limiter, segment
 
 
 @asynccontextmanager
@@ -12,13 +13,18 @@ async def lifespan(app: FastAPI):
     """进程启动 / 关闭时要做的事。"""
     n = bloom.load_from_db()
     print("[startup] 布隆过滤器预热完成，载入 %d 个短码" % n)
-    yield
+
+    task = asyncio.create_task(clicks.flush_loop())
+    try:
+        yield
+    finally:
+        task.cancel()
 
 
 app = FastAPI(
     title="ShortLink",
     description="一个读多写少的高并发短链服务",
-    version="0.4.0",
+    version="0.5.0",
     lifespan=lifespan,
 )
 
@@ -30,6 +36,17 @@ class CreateLinkReq(BaseModel):
 class CreateLinkResp(BaseModel):
     code: str
     short_url: str
+
+
+# ---------- 中间件：限流（v5）----------
+# 中间件在所有路由之前执行，正好用来做「进门先检查」这种全局的事
+
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    client = request.client.host if request.client else "unknown"
+    if not limiter.allow(client):
+        return JSONResponse(status_code=429, content={"detail": "请求太频繁，请稍后再试"})
+    return await call_next(request)
 
 
 @app.get("/health")
@@ -100,7 +117,7 @@ def redirect_to_original(code: str):
         # ---------- 缓存未命中：回源查数据库 ----------
         with db.get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT id, url FROM links WHERE code = %s", (code,))
+                cur.execute("SELECT url FROM links WHERE code = %s", (code,))
                 row = cur.fetchone()
 
                 if row is None:
@@ -113,11 +130,6 @@ def redirect_to_original(code: str):
 
                 url = row["url"]
 
-                # 点击计数。注意只有回源才会走到这里 ——
-                # 换句话说：命中缓存的那 9999 次，clicks 一次都没加。
-                # 这不是 bug，是 v2 的已知取舍，v5 用异步 + 批量写入来补。
-                cur.execute("UPDATE links SET clicks = clicks + 1 WHERE id = %s", (row["id"],))
-
         # 回源拿到结果后写进缓存，下次就不用再查库了
         r.set(key, url, ex=cache.URL_TTL)
 
@@ -126,5 +138,11 @@ def redirect_to_original(code: str):
         # 拿空字符串当哨兵是安全的 —— url 有校验，必须以 http:// 或 https:// 开头，
         # 所以真实数据的值永远不可能是个空串。
         raise HTTPException(status_code=404, detail="短码不存在")
+
+    # ---- 第 3 道之后：记点击 ----
+    # v5 改造：不再同步 UPDATE 数据库，只往 Redis 里加一。
+    # 后台协程每秒把累积的增量批量落库一次。
+    # 副作用是点击数变成「最终一致」，但至少命中缓存的请求现在也算得上了。
+    clicks.record(code)
 
     return RedirectResponse(url=url, status_code=302)
