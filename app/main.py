@@ -1,13 +1,25 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-from . import cache, config, db, ids
+from . import bloom, cache, config, db, ids
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """进程启动 / 关闭时要做的事。"""
+    n = bloom.load_from_db()
+    print("[startup] 布隆过滤器预热完成，载入 %d 个短码" % n)
+    yield
+
 
 app = FastAPI(
     title="ShortLink",
     description="一个读多写少的高并发短链服务",
-    version="0.1.0",
+    version="0.3.0",
+    lifespan=lifespan,
 )
 
 
@@ -42,6 +54,9 @@ def create_link(req: CreateLinkReq):
             code = ids.make_code(new_id, config.CODE_LEN)
             cur.execute("UPDATE links SET code = %s WHERE id = %s", (code, new_id))
 
+    # 新短码要立刻进过滤器，否则自己刚创建的短链会被判成「不存在」
+    bloom.add(code)
+
     return CreateLinkResp(code=code, short_url=f"{config.BASE_URL}/{code}")
 
 
@@ -58,6 +73,13 @@ def redirect_to_original(code: str):
       302 = 临时重定向，每次都回来问一次，所以能统计、也能随时改目标地址。
     这是短链服务的经典取舍，面试很爱问。
     """
+    # ---- 第 1 道：布隆过滤器 ----
+    # 它说「不存在」就一定不存在。海量随机短码的攻击会死在这一行，
+    # Redis 的缓存查询和 MySQL 都不会被碰到。
+    if not bloom.might_contain(code):
+        raise HTTPException(status_code=404, detail="短码不存在")
+
+    # ---- 第 2 道：Redis 缓存 ----
     r = cache.get_client()
     key = cache.cache_key(code)
 
