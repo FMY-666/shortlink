@@ -1,0 +1,22 @@
+# 构建镜像时用不到的东西挡在外面：构建上下文更小、镜像更干净、密码不会被打进去。
+
+# 虚拟环境（容器里会重新 pip install，拷进去只多几百兆）
+.venv/
+venv/
+
+# 本地配置和密码：绝对不能进镜像（运行时用 docker run --env-file .env 传进去）
+.env
+
+# 版本库
+.git/
+
+# 本地性能分析产物
+flame*.svg
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 编辑器
+.vscode/
+.idea/

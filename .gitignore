@@ -7,6 +7,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# 本地性能分析产物（v6 的火焰图，只在本地看，不进版本库）
+flame*.svg
+
 # 配置里的密码，绝对不能提交
 .env
 
