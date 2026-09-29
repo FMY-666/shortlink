@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" width="880" height="400" role="img" aria-label="火焰图自身样本按模块归堆">
+  <rect x="0" y="0" width="880" height="400" fill="#FFFFFF"/>
+
+  <text x="24" y="32" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600" fill="#2C2C2A">火焰图：自身样本按模块归堆</text>
+  <text x="24" y="52" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#6B6A66">py-spy 0.4.2 · 总 740 个样本 · 自身样本 = 去掉子帧之后的「真正占用 CPU 的那一层」</text>
+
+  <!-- 行 1 -->
+  <text x="242" y="94" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" fill="#2C2C2A">redis 客户端收发</text>
+  <rect x="250" y="76" width="506" height="26" rx="4" fill="#185FA5"/>
+  <text x="764" y="94" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#5F5E5A">294 · 39.7%</text>
+
+  <!-- 行 2 -->
+  <text x="242" y="132" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" fill="#2C2C2A">asyncio 网络层</text>
+  <rect x="250" y="114" width="440" height="26" rx="4" fill="#3F82C4"/>
+  <text x="698" y="132" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#5F5E5A">255 · 34.5%</text>
+
+  <!-- 行 3 -->
+  <text x="242" y="170" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" fill="#2C2C2A">starlette / fastapi / anyio</text>
+  <rect x="250" y="152" width="126" height="26" rx="4" fill="#8FB0D0"/>
+  <text x="384" y="170" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#5F5E5A">73 · 9.9%</text>
+
+  <!-- 行 4 -->
+  <text x="242" y="208" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" fill="#2C2C2A">uvicorn 协议层</text>
+  <rect x="250" y="190" width="83" height="26" rx="4" fill="#AFBDC9"/>
+  <text x="341" y="208" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#5F5E5A">48 · 6.5%</text>
+
+  <!-- 行 5 -->
+  <text x="242" y="246" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" fill="#2C2C2A">logging（access log）</text>
+  <rect x="250" y="228" width="83" height="26" rx="4" fill="#A32D2D"/>
+  <text x="341" y="246" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#5F5E5A">48 · 6.5%</text>
+
+  <!-- 行 6 -->
+  <text x="242" y="284" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" fill="#2C2C2A">其他</text>
+  <rect x="250" y="266" width="23" height="26" rx="4" fill="#C9C9C4"/>
+  <text x="281" y="284" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#5F5E5A">13 · 1.8%</text>
+
+  <!-- 行 7 -->
+  <text x="242" y="322" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="600" fill="#0F6E56">app/ 业务代码</text>
+  <rect x="250" y="304" width="15" height="26" rx="4" fill="#0F6E56"/>
+  <text x="273" y="322" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="600" fill="#0F6E56">9 · 1.2%</text>
+
+  <line x1="24" y1="352" x2="856" y2="352" stroke="#EDEDE9" stroke-width="1"/>
+  <text x="24" y="376" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12" fill="#4A4A47">自己写的业务代码只占 1.2% —— 瓶颈不在计算，在网络往返。唯一能动刀的一块是 access log（红色，6.5%，<tspan font-family="ui-monospace, Consolas, monospace">--no-access-log</tspan> 可整块砍掉）。</text>
+</svg>

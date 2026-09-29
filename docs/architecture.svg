@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 620" width="920" height="620" role="img" aria-label="ShortLink 架构图">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#8A8A85"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="920" height="620" fill="#FFFFFF"/>
+
+  <!-- ============ ① 读路径 ============ -->
+  <text x="24" y="30" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600" fill="#185FA5">① 跳转读路径　GET /{code}</text>
+
+  <rect x="24" y="52" width="104" height="56" rx="10" fill="#FBFBF9" stroke="#E0E0DC" stroke-width="1.4"/>
+  <text x="76" y="76" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">客户端</text>
+  <text x="76" y="94" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#6B6A66">浏览器</text>
+
+  <rect x="164" y="52" width="152" height="56" rx="10" fill="#FDF6F6" stroke="#E8C9C9" stroke-width="1.4"/>
+  <text x="240" y="76" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#A32D2D">令牌桶限流</text>
+  <text x="240" y="94" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#8C5A5A">v5 · Redis + Lua</text>
+
+  <rect x="352" y="52" width="150" height="56" rx="10" fill="#F3F8F6" stroke="#C8E0D8" stroke-width="1.4"/>
+  <text x="427" y="76" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#0F6E56">布隆过滤器</text>
+  <text x="427" y="94" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#4A7A6B">v3 · 手写位数组</text>
+
+  <rect x="538" y="52" width="140" height="56" rx="10" fill="#FBF7F1" stroke="#E6D9C2" stroke-width="1.4"/>
+  <text x="608" y="76" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#8A5A17">Redis 缓存</text>
+  <text x="608" y="94" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#8A7355">v2 · Cache-Aside</text>
+
+  <rect x="714" y="52" width="182" height="56" rx="10" fill="#F4F7FB" stroke="#CBD9EA" stroke-width="1.4"/>
+  <text x="805" y="76" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#185FA5">MySQL</text>
+  <text x="805" y="94" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#5A7291">v1 · 兜底回源</text>
+
+  <line x1="128" y1="80" x2="160" y2="80" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="316" y1="80" x2="348" y2="80" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="502" y1="80" x2="534" y2="80" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="678" y1="80" x2="710" y2="80" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <line x1="240" y1="108" x2="240" y2="146" stroke="#C97C7C" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="427" y1="108" x2="427" y2="146" stroke="#5E9B87" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="608" y1="108" x2="608" y2="146" stroke="#B08A50" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="164" y="150" width="152" height="40" rx="8" fill="#FCEBEB" stroke="#E8C9C9" stroke-width="1.2"/>
+  <text x="240" y="175" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#A32D2D">429 快速拒绝</text>
+
+  <rect x="352" y="150" width="150" height="40" rx="8" fill="#E1F5EE" stroke="#C8E0D8" stroke-width="1.2"/>
+  <text x="427" y="175" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#0F6E56">404 不存在</text>
+
+  <rect x="538" y="150" width="140" height="40" rx="8" fill="#F7EEDF" stroke="#E6D9C2" stroke-width="1.2"/>
+  <text x="608" y="175" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#8A5A17">302 跳转</text>
+
+  <text x="700" y="175" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11.5" fill="#6B6A66">任一关拦下 → 后面的关卡不被触碰</text>
+
+  <!-- ============ ② 创建路径 ============ -->
+  <line x1="24" y1="216" x2="896" y2="216" stroke="#EDEDE9" stroke-width="1"/>
+  <text x="24" y="248" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600" fill="#185FA5">② 创建路径　POST /api/links</text>
+
+  <rect x="24" y="268" width="104" height="56" rx="10" fill="#FBFBF9" stroke="#E0E0DC" stroke-width="1.4"/>
+  <text x="76" y="292" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">客户端</text>
+  <text x="76" y="310" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#6B6A66">提交长链接</text>
+
+  <rect x="164" y="268" width="210" height="56" rx="10" fill="#F4F7FB" stroke="#CBD9EA" stroke-width="1.4"/>
+  <text x="269" y="292" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#185FA5">号段发号器</text>
+  <text x="269" y="310" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#5A7291">v4 · 双 buffer 预取，内存里发号</text>
+
+  <rect x="410" y="268" width="176" height="56" rx="10" fill="#F4F7FB" stroke="#CBD9EA" stroke-width="1.4"/>
+  <text x="498" y="292" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#185FA5">INSERT</text>
+  <text x="498" y="310" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#5A7291">MySQL 一次写入（连接池）</text>
+
+  <rect x="622" y="268" width="170" height="56" rx="10" fill="#FBFBF9" stroke="#E0E0DC" stroke-width="1.4"/>
+  <text x="707" y="292" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">返回 6 位短码</text>
+  <text x="707" y="310" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#6B6A66">id → 62 进制</text>
+
+  <line x1="128" y1="296" x2="160" y2="296" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="374" y1="296" x2="406" y2="296" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="586" y1="296" x2="618" y2="296" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <!-- ============ ③ 后台任务 ============ -->
+  <line x1="24" y1="368" x2="896" y2="368" stroke="#EDEDE9" stroke-width="1"/>
+  <text x="24" y="400" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="15" font-weight="600" fill="#185FA5">③ 后台任务　点击统计（最终一致）</text>
+
+  <rect x="24" y="420" width="124" height="56" rx="10" fill="#FBFBF9" stroke="#E0E0DC" stroke-width="1.4"/>
+  <text x="86" y="444" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">跳转成功</text>
+  <text x="86" y="462" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#6B6A66">302 发出后</text>
+
+  <rect x="184" y="420" width="196" height="56" rx="10" fill="#FBF7F1" stroke="#E6D9C2" stroke-width="1.4"/>
+  <text x="282" y="444" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#8A5A17">clicks:pending</text>
+  <text x="282" y="462" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#8A7355">v5 · Redis Hash 累加，不碰数据库</text>
+
+  <rect x="416" y="420" width="142" height="56" rx="10" fill="#FBFBF9" stroke="#E0E0DC" stroke-width="1.4"/>
+  <text x="487" y="444" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#2C2C2A">每秒批量落库</text>
+  <text x="487" y="462" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#6B6A66">后台定时任务</text>
+
+  <rect x="594" y="420" width="222" height="56" rx="10" fill="#F4F7FB" stroke="#CBD9EA" stroke-width="1.4"/>
+  <text x="705" y="444" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="14" font-weight="500" fill="#185FA5">UPDATE links SET clicks</text>
+  <text x="705" y="462" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="11" fill="#5A7291">506 次跳转只写 5 次库（降到 1%）</text>
+
+  <line x1="148" y1="448" x2="180" y2="448" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="380" y1="448" x2="412" y2="448" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="558" y1="448" x2="590" y2="448" stroke="#8A8A85" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <!-- ============ 页脚 ============ -->
+  <line x1="24" y1="516" x2="896" y2="516" stroke="#EDEDE9" stroke-width="1"/>
+  <text x="24" y="544" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#4A4A47">三道关卡：布隆过滤器挡掉不存在的短码 → Redis 挡掉重复读 → MySQL 兜底。任意一关拦下，后面的关卡都不会被触碰。</text>
+  <text x="24" y="568" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#4A4A47">火焰图实测：业务代码只占 1.2% CPU，时间几乎全花在 Redis 的网络收发上 —— 这是一个 IO 密集型服务。</text>
+  <text x="24" y="592" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#4A4A47">创建走号段发号器（不查库拿 id），跳转走缓存；两者最后都收敛到 MySQL 的写操作。</text>
+</svg>
