@@ -30,3 +30,8 @@
 # TROUBLESHOOTING.html 这类文档型 HTML 不计入语言统计，否则 GitHub
 # 会把整个项目标成 "HTML"，后端项目看起来就很怪。标成文档即可排除。
 *.html linguist-documentation
+
+# 第三方压缩库（web/qrcode.min.js）标成 vendored：
+# 语言统计里只算"你自己写的代码"，引一个 20 KB 的 min.js 不该
+# 把整个 Python 项目的语言标签带跑偏。
+*.min.js linguist-vendored

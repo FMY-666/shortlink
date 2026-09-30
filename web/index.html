@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f6f8">
+<title>ShortLink · 短链服务</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1f2328; --ink2:#5b6470; --line:#e3e7ec;
+    --blue:#2f6feb; --blue-weak:#eaf1ff; --red:#c0392b; --green:#16a34a;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Roboto,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:18px 14px 48px}
+
+  /* ---------- 头部 ---------- */
+  .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .hd h1{margin:0;font-size:20px;letter-spacing:.2px}
+  .hd .sub{margin:4px 0 0;color:var(--ink2);font-size:13px}
+  .hd .ghost{flex:0 0 auto;text-decoration:none}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .lab{font-size:13px;color:var(--ink2);margin-bottom:6px}
+
+  /* ---------- 输入区 ---------- */
+  textarea{
+    width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+    font:inherit;font-size:14px;color:var(--ink);background:#fbfcfd;resize:vertical;min-height:78px;
+  }
+  textarea:focus{outline:none;border-color:var(--blue);background:#fff}
+  .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  button{font:inherit;font-size:14px;border-radius:10px;padding:10px 16px;border:1px solid transparent;cursor:pointer}
+  .primary{background:var(--blue);color:#fff}
+  .primary:disabled{opacity:.55;cursor:default}
+  .ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+  .ghost:hover{border-color:#cfd6de}
+  .mini{background:none;border:none;color:var(--ink2);padding:4px 6px;font-size:13px}
+  .mini:hover{color:var(--blue)}
+  .mini.rm:hover{color:var(--red)}
+  .keyhint{margin-left:auto;font-size:12px;color:#98a2ad}
+
+  .msg{margin:10px 0 0;font-size:13px;color:var(--ink2);overflow-wrap:anywhere}
+  .msg.bad{color:var(--red)}
+  .msg.good{color:var(--green)}
+
+  /* ---------- 结果区 ---------- */
+  .result{display:flex;gap:16px;align-items:flex-start}
+  .qrbox{
+    flex:0 0 auto;width:200px;height:200px;border:1px solid var(--line);border-radius:12px;
+    background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  /* qrcodejs 会把画布画成 480×480 再塞进一个 <img>，这里把显示尺寸压回 200 */
+  .qrbox img,.qrbox canvas{width:200px;height:200px;display:block}
+  .qrbox .ph{font-size:12px;color:#98a2ad;text-align:center;padding:0 10px}
+  .rbody{flex:1 1 auto;min-width:0}
+  .short{
+    display:block;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:15px;
+    color:var(--blue);text-decoration:none;overflow-wrap:anywhere;
+  }
+  .short:hover{text-decoration:underline}
+  .from{font-size:13px;color:var(--ink2);overflow-wrap:anywhere;
+    background:#fbfcfd;border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+  .hint{margin:10px 0 0;font-size:12px;color:#98a2ad;line-height:1.6}
+
+  /* ---------- 最近生成 ---------- */
+  .rhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .rhd .lab{margin:0}
+  .list{list-style:none;margin:0;padding:0}
+  .list li{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+  .list li:first-child{border-top:none}
+  .list .code{
+    flex:0 0 auto;font-family:ui-monospace,Consolas,monospace;font-weight:600;font-size:14px;
+    color:var(--blue);text-decoration:none;
+  }
+  .list .u{flex:1 1 auto;min-width:0;font-size:12px;color:var(--ink2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .list .mini{flex:0 0 auto}
+
+  .foot{font-size:12px;color:#98a2ad;text-align:center;line-height:1.7}
+  .foot a{color:var(--ink2)}
+  code{background:#eef1f5;border-radius:4px;padding:1px 5px;font-size:12px}
+
+  #toast{
+    position:fixed;left:50%;bottom:22px;transform:translate(-50%,12px);
+    background:#1f2328;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:86vw;text-align:center;z-index:9;
+  }
+  #toast.on{opacity:.94;transform:translate(-50%,0)}
+
+  @media (max-width:540px){
+    .result{flex-direction:column;align-items:stretch}
+    .qrbox{align-self:center}
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <header class="hd">
+    <div>
+      <h1>ShortLink</h1>
+      <p class="sub">粘贴长链接 → 得到 6 位短码。同一个 WiFi 的人扫码就能跳转。</p>
+    </div>
+    <a class="ghost" href="/docs">API 文档</a>
+  </header>
+
+  <!-- ---------- 创建 ---------- -->
+  <section class="card">
+    <label class="lab" for="url">长链接</label>
+    <textarea id="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"
+      placeholder="https://example.com/very/long/path?utm_source=xxx"></textarea>
+    <div class="row">
+      <button id="go" class="primary">生成短链</button>
+      <span class="keyhint">Ctrl / ⌘ + Enter 也可以</span>
+    </div>
+    <p id="msg" class="msg" role="status" aria-live="polite" hidden></p>
+  </section>
+
+  <!-- ---------- 结果 ---------- -->
+  <section class="card result" id="result" hidden>
+    <div class="qrbox" id="qrbox"></div>
+    <div class="rbody">
+      <div class="lab">短链接（点一下就打开）</div>
+      <a id="shorturl" class="short" href="#" target="_blank" rel="noopener"></a>
+      <div class="lab" style="margin-top:12px">指向</div>
+      <div id="longurl" class="from"></div>
+      <div class="row">
+        <button id="copy" class="primary">复制短链</button>
+        <button id="save" class="ghost">保存二维码图片</button>
+        <button id="open" class="ghost">打开</button>
+      </div>
+      <p class="hint">
+        想把码给别人：先点「保存二维码图片」，再去微信 / QQ 里发图片。<br>
+        手机上如果没弹出保存框，就长按二维码 → 「存储图像」。
+      </p>
+    </div>
+  </section>
+
+  <!-- ---------- 最近生成 ---------- -->
+  <section class="card" id="recentCard" hidden>
+    <div class="rhd">
+      <span class="lab">最近生成（只存在这台设备的浏览器里）</span>
+      <button id="clear" class="mini">清空</button>
+    </div>
+    <ul id="recent" class="list"></ul>
+  </section>
+
+  <p class="foot">
+    本页是纯前端，数据都走 <code>POST /api/links</code> 和 <code>GET /{code}</code>，
+    页面本身不碰数据库。<br>接口文档：<a href="/docs">/docs</a>
+  </p>
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* 二维码库的加载：两种打开方式都能用
+   ─ 通过服务打开（http://…:8000/）→ 用服务自己提供的 /static/qrcode.min.js
+   ─ 直接双击本文件（file://）→ 用同目录下的 qrcode.min.js
+   这样即使没有网络（局域网连不上外网）二维码也能画出来。 */
+(function loadQRCodeLib() {
+  var s = document.createElement('script');
+  s.src = (location.protocol === 'file:') ? 'qrcode.min.js' : '/static/qrcode.min.js';
+  s.onload = startApp;
+  s.onerror = startApp;   // 加载失败也先让界面能用，只是画不出二维码
+  document.head.appendChild(s);
+})();
+
+function startApp() {
+  var $ = function (id) { return document.getElementById(id); };
+  var urlEl = $('url'), goEl = $('go'), msgEl = $('msg');
+  var resEl = $('result'), qrbox = $('qrbox'), shortEl = $('shorturl'), longEl = $('longurl');
+  var recentEl = $('recent'), recentCard = $('recentCard');
+
+  var STATE = { code: '', shortUrl: '', longUrl: '' };
+  var FILE_MODE = (location.protocol === 'file:');   // 是不是"双击打开"的方式
+  var LS_KEY = 'shortlink.recent.v1';
+
+  /* ================= 小工具 ================= */
+
+  function say(text, kind) {
+    msgEl.hidden = !text;
+    msgEl.textContent = text || '';
+    msgEl.className = 'msg' + (kind ? ' ' + kind : '');
+  }
+
+  function toast(text) {
+    var t = $('toast');
+    t.textContent = text;
+    t.classList.add('on');
+    clearTimeout(t.__timer);
+    t.__timer = setTimeout(function () { t.classList.remove('on'); }, 2400);
+  }
+
+  /* 复制文本。
+     ⚠ navigator.clipboard 只在「安全上下文」（https / localhost / file:）下存在。
+       局域网用 http://192.168.x.x:8000 打开时它是 undefined，
+       所以必须准备 execCommand('copy') 这条老路 —— 否则手机上点了没反应。 */
+  function copyText(text, okWord) {
+    function legacy() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';           // 放到屏幕外，但不能用 display:none（那样选不中）
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);   // iOS 上只 select() 不够
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+    if (window.isSecureContext && navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast(okWord); },
+        function () { toast(legacy() ? okWord : '复制失败，请长按选中后复制'); }
+      );
+    } else {
+      toast(legacy() ? okWord : '复制失败，请长按选中后复制');
+    }
+  }
+
+  function download(href, name) {
+    var a = document.createElement('a');
+    a.href = href;
+    a.download = name;
+    a.rel = 'noopener';
+    document.body.appendChild(a);       // 有些浏览器要求 a 在文档里才肯下载
+    a.click();
+    document.body.removeChild(a);
+    toast('已保存 ' + name + '，去「下载」或「相册」里找');
+  }
+
+  /* ================= 二维码 ================= */
+
+  function drawQr(text) {
+    qrbox.innerHTML = '';               // ★ 必须先清空：qrcodejs 是 appendChild 进去的，
+                                        //   不清就会叠出第二个 canvas/img
+    if (!window.QRCode) {
+      qrbox.innerHTML = '<span class="ph">二维码库没加载<br>/static/qrcode.min.js 没取到</span>';
+      return;
+    }
+    new QRCode(qrbox, {
+      text: text,
+      width: 480, height: 480,          // 画布真实像素；显示尺寸由 CSS 压到 200
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H   // H = 30% 容错，屏幕上扫更稳
+    });
+  }
+
+  /* 取出二维码图片的 data URL。
+     qrcodejs 内部把 canvas 转成 PNG 塞进了 <img src="data:image/png;base64,…">，
+     所以优先拿 img 的 src；万一没有（被别的渲染方式替换过）再回去问 canvas。 */
+  function qrDataUrl() {
+    var img = qrbox.querySelector('img');
+    if (img && /^data:image\//.test(img.src)) return img.src;
+    var cv = qrbox.querySelector('canvas');
+    return cv ? cv.toDataURL('image/png') : '';
+  }
+
+  function saveQr() {
+    var dataUrl = qrDataUrl();
+    if (!dataUrl) { toast('还没有二维码'); return; }
+    var name = 'shortlink-' + (STATE.code || 'qr') + '.png';
+
+    /* ① 优先走手机原生分享面板：能直接发微信 / 存相册。
+          但 navigator.share 同样只在安全上下文里存在 ——
+          局域网 http 访问时它是 undefined，所以一定要有 ②。 */
+    if (window.isSecureContext && navigator.canShare) {
+      fetch(dataUrl)
+        .then(function (r) { return r.blob(); })
+        .then(function (blob) {
+          var file = new File([blob], name, { type: 'image/png' });
+          if (!navigator.canShare({ files: [file] })) throw new Error('cannot-share-files');
+          return navigator.share({ files: [file], title: '短链二维码', text: STATE.shortUrl });
+        })
+        .catch(function (e) {
+          if (e && e.name === 'AbortError') return;   // 用户自己取消的，别再去下载
+          download(dataUrl, name);
+        });
+      return;
+    }
+    /* ② 兜底：a[download]。局域网 http 下走的就是这条。 */
+    download(dataUrl, name);
+  }
+
+  /* ================= 生成短链 ================= */
+
+  function showResult(d, isDemo) {
+    STATE.code = d.code || '';
+    STATE.shortUrl = d.short_url || '';
+    STATE.longUrl = d.url || (isDemo ? 'https://example.com/very/long/path?from=demo' : urlEl.value.trim());
+
+    shortEl.textContent = STATE.shortUrl;
+    shortEl.href = STATE.shortUrl;
+    longEl.textContent = STATE.longUrl;
+    resEl.hidden = false;
+    drawQr(STATE.shortUrl);
+
+    if (isDemo) {
+      say('预览模式：下面是示例数据（用 file:// 直接打开时才会出现）。要真正生成短链，请从 http://…:8000/ 打开。', '');
+    }
+    if (resEl.scrollIntoView) resEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function make() {
+    var url = urlEl.value.trim();
+    if (!url) { say('先粘贴一个长链接', 'bad'); urlEl.focus(); return; }
+
+    goEl.disabled = true;
+    say('正在生成…', '');
+
+    /* 注意这里是「相对路径」/api/links，不是 http://127.0.0.1:8000/api/links。
+       写死后就变成"只有我这台电脑能用了"，手机一定连不上。
+       相对路径 = 页面从哪来就回哪去，局域网、本机、以后换域名都不会错。 */
+    fetch('/api/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    })
+      .then(function (r) {
+        return r.json().then(function (body) { return { ok: r.ok, status: r.status, body: body }; });
+      })
+      .then(function (res) {
+        if (!res.ok) {
+          var d = res.body && res.body.detail;
+          say(d ? ('生成失败：' + d) : ('生成失败（HTTP ' + res.status + '）'), 'bad');
+          return;
+        }
+        showResult(res.body, false);
+        addRecent(res.body, url);
+        say('生成成功。同一个 WiFi 下的人扫这个码就能跳转。', 'good');
+      })
+      .catch(function () {
+        say(FILE_MODE
+          ? '当前是「本地文件」方式打开（file://），只能看界面。要真正生成短链，请用 http://<你的IP>:8000/ 打开。'
+          : '连不上服务：先确认 start-all.bat 已经跑起来；如果你是用手机访问，地址要用电脑的局域网 IP，别用 127.0.0.1。', 'bad');
+      })
+      .then(function () { goEl.disabled = false; });
+  }
+
+  /* ================= 最近生成（存 localStorage） ================= */
+
+  function readRecent() {
+    try {
+      var a = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+      return a instanceof Array ? a : [];
+    } catch (e) { return []; }
+  }
+
+  function writeRecent(list) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(list.slice(0, 8))); } catch (e) { }
+    renderRecent();
+  }
+
+  function addRecent(d, longUrl) {
+    var list = readRecent().filter(function (x) { return x.code !== d.code; });
+    list.unshift({ code: d.code, short_url: d.short_url, url: longUrl, ts: Date.now() });
+    writeRecent(list);
+  }
+
+  function renderRecent() {
+    var list = readRecent();
+    recentCard.hidden = list.length === 0;
+    recentEl.innerHTML = '';
+
+    list.forEach(function (it) {
+      var li = document.createElement('li');
+
+      var link = document.createElement('a');
+      link.className = 'code';
+      link.textContent = it.code;
+      link.href = it.short_url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+
+      var u = document.createElement('span');
+      u.className = 'u';
+      u.textContent = it.url || '';
+
+      var cp = document.createElement('button');
+      cp.className = 'mini';
+      cp.textContent = '复制';
+      cp.onclick = function () { copyText(it.short_url, '已复制短链'); };
+
+      var rm = document.createElement('button');
+      rm.className = 'mini rm';
+      rm.textContent = '✕';
+      rm.title = '从列表里删掉（不会删服务器上的短链）';
+      rm.onclick = function () {
+        writeRecent(readRecent().filter(function (x) { return x.code !== it.code; }));
+      };
+
+      li.appendChild(link); li.appendChild(u); li.appendChild(cp); li.appendChild(rm);
+      recentEl.appendChild(li);
+    });
+  }
+
+  /* ================= 事件接线 ================= */
+
+  goEl.onclick = make;
+  $('copy').onclick = function () { if (STATE.shortUrl) copyText(STATE.shortUrl, '已复制短链'); };
+  $('save').onclick = saveQr;
+  $('open').onclick = function () { if (STATE.shortUrl) window.open(STATE.shortUrl, '_blank'); };
+  $('clear').onclick = function () { writeRecent([]); };
+
+  urlEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); make(); }
+  });
+
+  renderRecent();
+
+  /* 只有「双击本文件」打开时才填一份示例，方便先把界面看清楚。
+     通过 http://… 打开时永远不会走到这里。 */
+  if (FILE_MODE) {
+    showResult({ code: '0000UV', short_url: 'http://192.168.0.100:8000/0000UV' }, true);
+  }
+}
+</script>
+</body>
+</html>

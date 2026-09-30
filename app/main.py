@@ -1,8 +1,10 @@
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import bloom, cache, clicks, config, db, ids, limiter, segment
@@ -29,6 +31,18 @@ app = FastAPI(
 )
 
 
+# 前端页面放在和 app/ 平级的 web/ 目录里。
+# 这里用 Path(__file__) 算绝对路径，而不是写 "web/index.html" 这种相对路径 ——
+# 相对路径是跟着「你敲命令时所在的目录」走的，换个目录启动就找不到文件
+# （和 config.py 里 load_dotenv() 找 .env 是同一类坑）。
+WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+
+# 把 web/ 挂到 /static 下：/static/qrcode.min.js 就是 web/qrcode.min.js。
+# 用两段路径 /static/xxx 而不是 /xxx，是为了避开下面的 /{code} 通配路由：
+# /{code} 匹配不了带斜杠的两段路径，所以静态文件永远不会被它抢走。
+app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+
+
 class CreateLinkReq(BaseModel):
     url: str
 
@@ -47,6 +61,16 @@ async def rate_limit(request: Request, call_next):
     if not limiter.allow(client):
         return JSONResponse(status_code=429, content={"detail": "请求太频繁，请稍后再试"})
     return await call_next(request)
+
+
+@app.get("/", include_in_schema=False)
+def home():
+    """返回短链操作页面。
+
+    纯前端页面，自己不含任何业务逻辑 —— 数据都还是走 POST /api/links 和 GET /{code}。
+    include_in_schema=False 表示它不进 /docs 的接口列表：它是给人看的页面，不是接口。
+    """
+    return FileResponse(WEB_DIR / "index.html")
 
 
 @app.get("/health")
