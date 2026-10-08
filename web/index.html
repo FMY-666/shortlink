@@ -59,6 +59,23 @@
   /* qrcodejs 会把画布画成 480×480 再塞进一个 <img>，这里把显示尺寸压回 200 */
   .qrbox img,.qrbox canvas{width:200px;height:200px;display:block}
   .qrbox .ph{font-size:12px;color:#98a2ad;text-align:center;padding:0 10px}
+  .qrbox{cursor:zoom-in}
+
+  /* ---------- 二维码大图（手机长按存相册） ---------- */
+  #qrview{
+    position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:20;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;padding:22px;
+  }
+  /* 关键：这里绝不能写 -webkit-touch-callout:none，也不要给图片加覆盖层，
+     否则 iOS 长按不会弹出「存储到照片」。 */
+  #qrview img{
+    width:min(88vw,60vh);height:auto;max-width:520px;display:block;
+    -webkit-touch-callout:default;
+  }
+  #qrview .tip{font-size:13px;color:var(--ink2);text-align:center;line-height:1.8;max-width:420px;margin:0}
+  #qrview .tip b{color:var(--ink)}
+  #qrview .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
   .rbody{flex:1 1 auto;min-width:0}
   .short{
     display:block;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:15px;
@@ -90,7 +107,7 @@
   #toast{
     position:fixed;left:50%;bottom:22px;transform:translate(-50%,12px);
     background:#1f2328;color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;
-    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:86vw;text-align:center;z-index:9;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:86vw;text-align:center;z-index:30;
   }
   #toast.on{opacity:.94;transform:translate(-50%,0)}
 
@@ -133,12 +150,12 @@
       <div id="longurl" class="from"></div>
       <div class="row">
         <button id="copy" class="primary">复制短链</button>
-        <button id="save" class="ghost">保存二维码图片</button>
+        <button id="save" class="ghost">保存到相册</button>
         <button id="open" class="ghost">打开</button>
       </div>
       <p class="hint">
-        想把码给别人：先点「保存二维码图片」，再去微信 / QQ 里发图片。<br>
-        手机上如果没弹出保存框，就长按二维码 → 「存储图像」。
+        想把码给别人：点「保存到相册」，在系统面板里选<b>存储到照片 / 保存图片</b>。<br>
+        没弹出面板的话，点二维码放大，再<b>长按图片 → 存储到照片</b>。
       </p>
     </div>
   </section>
@@ -157,6 +174,15 @@
     页面本身不碰数据库。<br>接口文档：<a href="/docs">/docs</a>
   </p>
 </main>
+
+<div id="qrview" hidden>
+  <img id="qrimg" alt="短链二维码" draggable="false">
+  <p class="tip">长按上面的图片 → <b>存储到照片 / 保存图片</b><br>或者直接用另一台手机扫它</p>
+  <div class="acts">
+    <button id="qrdl" class="ghost">下载到文件</button>
+    <button id="qrclose" class="primary">关闭</button>
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -182,6 +208,14 @@ function startApp() {
   var STATE = { code: '', shortUrl: '', longUrl: '' };
   var FILE_MODE = (location.protocol === 'file:');   // 是不是"双击打开"的方式
   var LS_KEY = 'shortlink.recent.v1';
+  /* 是不是触屏（手机 / 平板）。桌面浏览器没有「相册」这个概念，
+     保存按钮要换个说法、直接下载。
+     ⚠ 判据不用 (hover:none)：iPad 接上妙控键盘后它可能变回 hover:hover，
+       会把平板误判成桌面。改用 pointer:coarse + ontouchstart 双保险。 */
+  var isTouch = !!(
+    (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+    ('ontouchstart' in window && navigator.maxTouchPoints > 0)
+  );
 
   /* ================= 小工具 ================= */
 
@@ -237,7 +271,7 @@ function startApp() {
     document.body.appendChild(a);       // 有些浏览器要求 a 在文档里才肯下载
     a.click();
     document.body.removeChild(a);
-    toast('已保存 ' + name + '，去「下载」或「相册」里找');
+    toast('已下载 ' + name + '（在「下载 / 文件」里）');
   }
 
   /* ================= 二维码 ================= */
@@ -268,30 +302,67 @@ function startApp() {
     return cv ? cv.toDataURL('image/png') : '';
   }
 
+  /* 点二维码 → 开大图。
+     为什么要有这一屏：手机想存进相册，唯一 100% 可用的办法是「长按图片」，
+     而图片越大越好按 —— 200px 的小图经常按不准。 */
+  function openQrView() {
+    var dataUrl = qrDataUrl();
+    if (!dataUrl) { toast('还没有二维码'); return; }
+    $('qrimg').src = dataUrl;
+    $('qrview').hidden = false;
+    document.body.style.overflow = 'hidden';
+    toast('长按图片 → 存储到照片');
+  }
+
+  function closeQrView() {
+    $('qrview').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  /* data URL → Blob，全程同步、不走网络。
+     为什么不写 fetch(dataUrl).then(...)：navigator.share 要求「那次用户点击」还在有效期内，
+     中间插一个 await 就可能被 Safari 判成"不是用户点的"而直接拒掉。同步转换最稳。 */
+  function dataUrlToBlob(dataUrl) {
+    var m = /^data:([^;,]*)(;base64)?,(.*)$/.exec(dataUrl);
+    if (!m) return null;
+    var bin = m[2] ? atob(m[3].replace(/\s/g, '')) : decodeURIComponent(m[3]);
+    var u8 = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], { type: m[1] || 'image/png' });
+  }
+
+  /* 保存二维码。
+     ⚠ 先认清一个事实：网页没有任何 API 能直接写进系统相册 —— 那是 App 才有的权限。
+       所以手机上真正能进相册的只有两条路：
+         ① navigator.share({files}) → 系统分享面板 → 「存储到照片 / 保存图片」
+         ② 长按图片 → 系统菜单里的「存储到照片」   ← 100% 可用，永远保底
+       而 a[download] 在手机上只会丢进「文件 / 下载」App，不进相册 ——
+       所以它从「主路径」降级成「桌面专用 + 大图页里的小按钮」。 */
   function saveQr() {
     var dataUrl = qrDataUrl();
     if (!dataUrl) { toast('还没有二维码'); return; }
     var name = 'shortlink-' + (STATE.code || 'qr') + '.png';
 
-    /* ① 优先走手机原生分享面板：能直接发微信 / 存相册。
-          但 navigator.share 同样只在安全上下文里存在 ——
-          局域网 http 访问时它是 undefined，所以一定要有 ②。 */
-    if (window.isSecureContext && navigator.canShare) {
-      fetch(dataUrl)
-        .then(function (r) { return r.blob(); })
-        .then(function (blob) {
-          var file = new File([blob], name, { type: 'image/png' });
-          if (!navigator.canShare({ files: [file] })) throw new Error('cannot-share-files');
-          return navigator.share({ files: [file], title: '短链二维码', text: STATE.shortUrl });
-        })
-        .catch(function (e) {
-          if (e && e.name === 'AbortError') return;   // 用户自己取消的，别再去下载
-          download(dataUrl, name);
-        });
-      return;
+    if (!isTouch) { download(dataUrl, name); return; }   // 桌面没有相册，直接下载
+
+    /* ① 系统分享面板。navigator.share 只在「安全上下文」里存在：
+          https（隧道 / 真实域名）有；局域网 http://192.168.x.x:8000 没有 → 自动落到 ②。 */
+    if (navigator.share && navigator.canShare) {
+      var blob = dataUrlToBlob(dataUrl);
+      var file = blob ? new File([blob], name, { type: 'image/png' }) : null;
+      if (file && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: '短链二维码' })
+          .then(function () { toast('选「存储到照片 / 保存图片」就能进相册'); })
+          .catch(function (e) {
+            if (e && e.name === 'AbortError') return;   // 用户自己关掉了面板，别再打扰
+            openQrView();                               // 分享失败 → 退回长按保存
+          });
+        return;
+      }
     }
-    /* ② 兜底：a[download]。局域网 http 下走的就是这条。 */
-    download(dataUrl, name);
+
+    /* ② 没有分享能力（局域网 http 就是这条）→ 开大图，让用户长按保存。 */
+    openQrView();
   }
 
   /* ================= 生成短链 ================= */
@@ -413,6 +484,17 @@ function startApp() {
   $('save').onclick = saveQr;
   $('open').onclick = function () { if (STATE.shortUrl) window.open(STATE.shortUrl, '_blank'); };
   $('clear').onclick = function () { writeRecent([]); };
+
+  qrbox.onclick = openQrView;                    // 点小图 = 开大图（放大后好长按）
+  qrbox.title = '点一下放大，放大后长按可存进相册';
+  $('qrclose').onclick = closeQrView;
+  $('qrdl').onclick = function () {
+    download(qrDataUrl(), 'shortlink-' + (STATE.code || 'qr') + '.png');
+  };
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeQrView(); });
+
+  /* 桌面浏览器没有「相册」这个概念，按钮就别骗人，直说下载。 */
+  if (!isTouch) $('save').textContent = '下载二维码图片';
 
   urlEl.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); make(); }
